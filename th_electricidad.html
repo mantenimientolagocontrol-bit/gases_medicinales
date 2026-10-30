@@ -4,360 +4,1730 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Inspección Tableros Hospitalarios - Maternidad Edif. B</title>
+  <meta name="description" content="Sistema operativo para inspección, check list y control de tableros hospitalarios Edificio B Maternidad" />
+
+  <!-- Tipografía Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React 18 & ReactDOM & Babel Standalone -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
   <style>
-    body { background-color: #0b0f19; color: #e2e8f0; font-family: system-ui, -apple-system, sans-serif; }
-    .tab-active { background-color: #0d9488 !important; color: #ffffff !important; font-weight: 700; }
-    select, input, textarea { background-color: #1e293b !important; color: #f8fafc !important; border-color: #334155 !important; }
-    select:focus, input:focus, textarea:focus { border-color: #0d9488 !important; outline: none; }
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-mono, .tabular-nums {
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.4);
+      border-radius: 3px;
+    }
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-only {
+        display: block !important;
+      }
+    }
   </style>
 </head>
-<body class="min-h-screen pb-12 selection:bg-teal-500 selection:text-white">
+<body class="bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen antialiased selection:bg-teal-500 selection:text-white">
+  <div id="root"></div>
 
-  <!-- HEADER -->
-  <header class="bg-[#0f172a] border-b border-slate-800 sticky top-0 z-50 shadow-lg">
-    <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
-      <div class="flex items-center space-x-3 cursor-pointer" onclick="volverInicio()">
-        <div class="bg-teal-500/20 p-2 rounded-xl border border-teal-500/30">
-          <i class="fa-solid fa-shield-halved text-teal-400 text-xl"></i>
-        </div>
-        <div>
-          <h1 class="font-extrabold text-sm sm:text-base leading-none text-white uppercase">TH MATERNIDAD</h1>
-          <p class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase mt-0.5">Edificio B · Electromedicina</p>
-        </div>
-      </div>
-      <div class="flex items-center space-x-2">
-        <button onclick="cambiarVista('historial')" class="bg-[#1e293b] hover:bg-slate-800 text-slate-200 text-xs px-3 py-2 rounded-xl border border-slate-700 font-medium flex items-center space-x-1.5">
-          <i class="fa-solid fa-clock-rotate-left"></i>
-          <span>Historial</span>
-        </button>
-      </div>
-    </div>
-  </header>
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
 
-  <main class="max-w-4xl mx-auto px-4 mt-6">
-    <div id="app-container"></div>
-  </main>
-
-  <script>
+    // URL DE GOOGLE APPS SCRIPT ACTUALIZADA (PLANILLAS INDEPENDIENTES)
     const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbypcOJsdakwguuqlaRm4cgTnmvp0DentOUwoMSLSEjCVAx_WTov2j8SW4dr_8pQUrxmTA/exec';
     const WHATSAPP_TARGET_NUMBER = '5492616505569';
 
+    // CONSTANTES Y DATOS NORMATIVOS (PUNTOS E y F)
     const ROOMS = [
-      { id: 'sala-1-neo', name: 'Sala 1 - Neo - TH', panels: ['#12', '#13', '#14', '#15', '#16'], desc: 'Neonatología Sala 1 - 5 Tableros' },
-      { id: 'sala-2-neo', name: 'Sala 2 - Neo - TH', panels: ['#20', '#21', '#22', '#23', '#24'], desc: 'Neonatología Sala 2 - 5 Tableros' },
-      { id: 'partos-terapia', name: 'Partos/Terapia - TH', panels: ['#01', '#02', '#03', '#04', '#05', '#06', '#10', '#11'], desc: 'Centro obstétrico y Terapia - 8 Tableros' },
-      { id: 'sala-int-neo', name: 'Sala Int. Neo - TH', panels: ['#07', '#08', '#09'], desc: 'Internación Neonatológica - 3 Tableros' },
-      { id: 'sala-utpr', name: 'Sala UTPR - TH', panels: ['#17', '#18'], desc: 'Unidad de Trabajo de Parto y Recuperación - 2 Tableros' }
+      {
+        id: 'sala-1-neo',
+        name: 'Sala 1 - Neo - TH',
+        shortName: 'Sala 1 Neo',
+        panels: ['#12', '#13', '#14', '#15', '#16'],
+        sequenceNote: 'La secuencia va desde la #12 como inicio hasta la #16 como final.',
+        description: 'Neonatología Sala 1 - 5 Tableros aislados de distribución crítica',
+      },
+      {
+        id: 'sala-2-neo',
+        name: 'Sala 2 - Neo - TH',
+        shortName: 'Sala 2 Neo',
+        panels: ['#20', '#21', '#22', '#23', '#24'],
+        sequenceNote: 'La secuencia va desde la #20 como inicio hasta la #24 como final.',
+        description: 'Neonatología Sala 2 - 5 Tableros aislados de distribución crítica',
+      },
+      {
+        id: 'partos-terapia',
+        name: 'Partos/Terapia - TH',
+        shortName: 'Partos / Terapia',
+        panels: ['#01', '#02', '#03', '#04', '#05', '#06', '#10', '#11'],
+        sequenceNote: 'La secuencia va desde la #01 hasta la #11 (saltando de la #06 directamente a la #10).',
+        description: 'Centro obstétrico y terapia intensiva materna - 8 Tableros hospitalarios',
+      },
+      {
+        id: 'sala-int-neo',
+        name: 'Sala Int. Neo - TH',
+        shortName: 'Sala Int. Neo',
+        panels: ['#07', '#08', '#09'],
+        sequenceNote: 'La secuencia va desde la #07 como inicio hasta la #09 como final.',
+        description: 'Internación Neonatológica - 3 Tableros de suministro vital',
+      },
+      {
+        id: 'sala-utpr',
+        name: 'Sala UTPR - TH',
+        shortName: 'Sala UTPR',
+        panels: ['#17', '#18'],
+        sequenceNote: 'La secuencia va desde la #17 como inicio hasta la #18 como final.',
+        description: 'Unidad de Trabajo de Parto y Recuperación - 2 Tableros hospitalarios',
+      },
     ];
 
     const OPERATORS = [
-      'Murillo José Luis', 'Novicov Federico', 'Cabañas Gustavo', 'Condorí Lucas',
-      'Bejarano Diego', 'Landa Alejandro', 'Gimenez Andres', 'Fernandes Yair',
-      'Sinatra Matías', 'Olmedo Orlando', 'Soria Carlos', 'Masman Diego'
+      'Murillo José Luis',
+      'Novicov Federico',
+      'Cabañas Gustavo',
+      'Condorí Lucas',
+      'Bejarano Diego',
+      'Landa Alejandro',
+      'Gimenez Andres',
+      'Fernandes Yair',
+      'Sinatra Matías',
+      'Olmedo Orlando',
+      'Soria Carlos',
+      'Masman Diego',
     ];
 
-    let estadoApp = {
-      vista: 'salas', // 'salas', 'intervencion', 'historial'
-      salaActual: null,
-      modo: 'checklist', // 'emergencia', 'checklist', 'control'
-      panelIndexActual: 0,
-      datosPaneles: {},
-      operariosSeleccionados: []
+    const LIGHT_INDICATOR_KEYS = [
+      { key: 'uNormal', label: 'U.Normal', desc: 'Tensión Red Normal' },
+      { key: 'uAlternativa', label: 'U.Alternativa', desc: 'Tensión Grupo/Alternativa' },
+      { key: 'uPrincipal', label: 'U.Principal', desc: 'Tensión Línea Principal' },
+      { key: 'uCircuitoA', label: 'U.Circuito A', desc: 'Circuito A Quirúrgico' },
+      { key: 'uCircuitoB', label: 'U.Circuito B', desc: 'Circuito B Vital' },
+      { key: 'uCircuitoC', label: 'U.Circuito C', desc: 'Circuito C' },
+      { key: 'uCircuitoD', label: 'U.Circuito D', desc: 'Circuito D' },
+      { key: 'uCircuitoE', label: 'U.Circuito E', desc: 'Circuito E' },
+    ];
+
+    // ICONOS SVG EN LÍNEA AUTÓNOMOS
+    const Icon = ({ name, className = "w-4 h-4" }) => {
+      switch (name) {
+        case 'shield':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>;
+        case 'alert':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>;
+        case 'check':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"/></svg>;
+        case 'zap':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>;
+        case 'sun':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>;
+        case 'moon':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>;
+        case 'arrow-right':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>;
+        case 'arrow-left':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>;
+        case 'send':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>;
+        case 'layers':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>;
+        case 'history':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>;
+        case 'users':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>;
+        case 'user-plus':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>;
+        case 'gauge':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>;
+        case 'x':
+          return <svg className={className} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>;
+        case 'loader':
+          return <svg className={`${className} animate-spin`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>;
+        default:
+          return null;
+      }
     };
 
-    function renderizar() {
-      const container = document.getElementById('app-container');
-      if (!container) return;
+    // UTILIDADES DE FECHA Y PERSISTENCIA
+    const getCurrentDateFormatted = () => {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    };
 
-      if (estadoApp.vista === 'salas') {
-        container.innerHTML = `
-          <div class="space-y-6">
-            <div class="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 rounded-3xl p-6 text-white border border-teal-900/40 shadow-xl">
-              <span class="text-teal-400 text-xs font-bold uppercase tracking-wider">Edificio "B" Maternidad · Seguridad Eléctrica</span>
-              <h2 class="text-2xl font-extrabold mt-1">Inspección Operativa de Tableros</h2>
-              <p class="text-xs text-slate-300 mt-2">Seleccione una sala para realizar el recorrido secuencial tablero por tablero.</p>
-              <div class="mt-4 pt-4 border-t border-teal-900/50 flex justify-between items-center">
-                <span class="text-xs text-amber-300">¿Alerta de emergencia en UTPR?</span>
-                <button onclick="seleccionarEmergenciaUptr()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs px-3.5 py-2 rounded-xl font-bold flex items-center gap-1.5">
-                  <i class="fa-solid fa-triangle-exclamation"></i> Emergencia UTPR
-                </button>
-              </div>
-            </div>
+    const getCurrentTimeFormatted = () => {
+      const now = new Date();
+      return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    };
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              ${ROOMS.map(r => `
-                <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
-                  <div>
-                    <div class="flex justify-between items-start">
-                      <h3 class="font-bold text-white text-base">${r.name}</h3>
-                      <span class="text-xs font-mono bg-slate-800 text-teal-400 px-2 py-0.5 rounded">${r.panels.length} TH</span>
-                    </div>
-                    <p class="text-xs text-slate-400 mt-2">${r.desc}</p>
-                    <div class="mt-3 flex flex-wrap gap-1">
-                      ${r.panels.map(p => `<span class="text-[10px] font-mono bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700">TH ${p}</span>`).join('')}
-                    </div>
-                  </div>
-                  <button onclick="seleccionarSala('${r.id}')" class="mt-5 w-full bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs py-2.5 rounded-xl shadow transition flex items-center justify-center gap-2">
-                    <span>Intervenir Sala</span> <i class="fa-solid fa-arrow-right"></i>
-                  </button>
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        `;
-      } else if (estadoApp.vista === 'intervencion') {
-        const sala = estadoApp.salaActual;
-        const panelActual = sala.panels[estadoApp.panelIndexActual];
-        const datosPanel = estadoApp.datosPaneles[panelActual] || { estado: 'Funcionando', aislacion: 'SI', selectora: 'Automatica', luces: 'SI', display: 'SAFE', obs: '' };
-
-        container.innerHTML = `
-          <div class="space-y-6">
-            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4 shadow-xl">
-              <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div class="flex items-center gap-3">
-                  <button onclick="volverInicio()" class="p-2 bg-slate-800 text-slate-300 rounded-xl text-xs"><i class="fa-solid fa-arrow-left"></i></button>
-                  <div>
-                    <span class="text-[10px] font-mono text-teal-400 uppercase">${sala.name}</span>
-                    <h2 class="text-base font-bold text-white">Inspección Tablero TH ${panelActual}</h2>
-                  </div>
-                </div>
-                <span class="text-xs font-mono bg-teal-950 text-teal-300 px-2.5 py-1 rounded-lg border border-teal-800">
-                  TH ${estadoApp.panelIndexActual + 1} de ${sala.panels.length}
-                </span>
-              </div>
-
-              <!-- Selector de Modos -->
-              <div class="mt-3 grid grid-cols-3 gap-2">
-                <button onclick="cambiarModo('emergencia')" class="p-2.5 rounded-xl border text-center transition ${estadoApp.modo === 'emergencia' ? 'bg-rose-950/80 border-rose-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}">
-                  <i class="fa-solid fa-triangle-exclamation text-rose-500 block mb-1"></i><span class="text-xs">Emergencia</span>
-                </button>
-                <button onclick="cambiarModo('checklist')" class="p-2.5 rounded-xl border text-center transition ${estadoApp.modo === 'checklist' ? 'bg-teal-950/80 border-teal-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}">
-                  <i class="fa-solid fa-list-check text-teal-400 block mb-1"></i><span class="text-xs">Check List</span>
-                </button>
-                <button onclick="cambiarModo('control')" class="p-2.5 rounded-xl border text-center transition ${estadoApp.modo === 'control' ? 'bg-blue-950/80 border-blue-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}">
-                  <i class="fa-solid fa-gauge text-blue-400 block mb-1"></i><span class="text-xs">Control</span>
-                </button>
-              </div>
-            </div>
-
-            <!-- CONTENIDO DE FORMULARIO TABLERO POR TABLERO -->
-            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-              ${estadoApp.modo === 'emergencia' ? renderEmergenciaHtml(panelActual) : renderChecklistPanelHtml(panelActual, datosPanel)}
-
-              <!-- BOTONES DE NAVEGACIÓN ENTRE TABLEROS -->
-              <div class="pt-4 border-t border-slate-800 flex justify-between items-center gap-3">
-                <button onclick="panelAnterior()" ${estadoApp.panelIndexActual === 0 ? 'disabled' : ''} class="px-4 py-2.5 rounded-xl border bg-slate-900 text-xs font-semibold disabled:opacity-30">
-                  <i class="fa-solid fa-chevron-left mr-1"></i> Anterior TH
-                </button>
-                
-                ${estadoApp.panelIndexActual < sala.panels.length - 1 ? `
-                  <button onclick="siguientePanel()" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold">
-                    Siguiente TH <i class="fa-solid fa-chevron-right ml-1"></i>
-                  </button>
-                ` : `
-                  <button onclick="finalizarInspeccion()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold shadow-lg">
-                    <i class="fa-solid fa-check-circle mr-1"></i> Finalizar y Enviar Todo
-                  </button>
-                `}
-              </div>
-            </div>
-          </div>
-        `;
-      } else if (estadoApp.vista === 'historial') {
-        const guardados = JSON.parse(localStorage.getItem('th_historial_v3') || '[]');
-        container.innerHTML = `
-          <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-              <h2 class="text-white font-bold text-base"><i class="fa-solid fa-clock-rotate-left text-teal-400"></i> Historial de Registros</h2>
-              <button onclick="volverInicio()" class="bg-teal-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold">Volver</button>
-            </div>
-            ${guardados.length === 0 ? '<p class="text-xs text-slate-500 text-center py-8">No hay registros guardados.</p>' : 
-              guardados.map(item => `
-                <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs space-y-1">
-                  <div class="flex justify-between font-bold text-white">
-                    <span>${item.sala} (${item.modo})</span>
-                    <span class="text-teal-400">${item.fecha}</span>
-                  </div>
-                  <p class="text-slate-300"><strong>Operarios:</strong> ${item.operarios}</p>
-                </div>
-              `).join('')}
-          </div>
-        `;
+    const STORAGE_KEY = 'th_maternidad_b_inspections_v3';
+    const getStoredInspections = () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
       }
-    }
+    };
 
-    function renderChecklistPanelHtml(panel, datos) {
-      return `
-        <div class="space-y-4 text-xs">
-          <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
-            <div class="flex justify-between items-center">
-              <span class="font-bold text-white uppercase">Estado Operativo · TH ${panel}</span>
-              <select id="input-estado" onchange="guardarDatosPanel('${panel}')" class="p-2 rounded-lg font-bold">
-                <option value="Funcionando" ${datos.estado === 'Funcionando' ? 'selected' : ''}>🟢 Funcionando</option>
-                <option value="Alerta" ${datos.estado === 'Alerta' ? 'selected' : ''}>🟡 Alerta</option>
-                <option value="Fuera de Servicio" ${datos.estado === 'Fuera de Servicio' ? 'selected' : ''}>🔴 Fuera de Servicio</option>
-              </select>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
-              <div>
-                <label class="block text-slate-400 mb-1">Monitor de Aislación:</label>
-                <select id="input-aislacion" onchange="guardarDatosPanel('${panel}')" class="w-full p-2 rounded-lg">
-                  <option value="SI" ${datos.aislacion === 'SI' ? 'selected' : ''}>SÍ (Normal)</option>
-                  <option value="NO" ${datos.aislacion === 'NO' ? 'selected' : ''}>NO (Alarma)</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-slate-400 mb-1">Posición Selectora:</label>
-                <select id="input-selectora" onchange="guardarDatosPanel('${panel}')" class="w-full p-2 rounded-lg">
-                  <option value="Automatica" ${datos.selectora === 'Automatica' ? 'selected' : ''}>Automática</option>
-                  <option value="Principal" ${datos.selectora === 'Principal' ? 'selected' : ''}>Principal</option>
-                  <option value="Alternativa" ${datos.selectora === 'Alternativa' ? 'selected' : ''}>Alternativa</option>
-                </select>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-slate-400 mb-1">Prueba de Luces:</label>
-                <select id="input-luces" onchange="guardarDatosPanel('${panel}')" class="w-full p-2 rounded-lg">
-                  <option value="SI" ${datos.luces === 'SI' ? 'selected' : ''}>SÍ</option>
-                  <option value="NO" ${datos.luces === 'NO' ? 'selected' : ''}>NO</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-slate-400 mb-1">Valor en Display:</label>
-                <input type="text" id="input-display" value="${datos.display}" oninput="guardarDatosPanel('${panel}')" class="w-full p-2 rounded-lg font-mono" placeholder="Ej: SAFE / 230V">
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-slate-400 mb-1">Observaciones Específicas para TH ${panel}:</label>
-              <input type="text" id="input-obs" value="${datos.obs}" oninput="guardarDatosPanel('${panel}')" class="w-full p-2 rounded-lg" placeholder="Comentarios del tablero...">
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderEmergenciaHtml(panel) {
-      return `
-        <div class="space-y-4 text-xs">
-          <div class="bg-rose-950/40 border border-rose-500/50 p-3 rounded-xl text-rose-200">
-            <strong>🚨 Protocolo de Emergencia Activo para TH ${panel}</strong><br>
-            Verifique la presencia de tensión, apertura secuencial de ITM y estado del transformador.
-          </div>
-          <div>
-            <label class="block font-bold text-slate-300 mb-1">Detalle de la Falla / Acciones:</label>
-            <textarea id="em-obs" rows="3" class="w-full p-2 rounded-lg" placeholder="Desenchufar equipos defectuosos, verificar alarma..."></textarea>
-          </div>
-        </div>
-      `;
-    }
-
-    function guardarDatosPanel(panel) {
-      estadoApp.datosPaneles[panel] = {
-        estado: document.getElementById('input-estado')?.value || 'Funcionando',
-        aislacion: document.getElementById('input-aislacion')?.value || 'SI',
-        selectora: document.getElementById('input-selectora')?.value || 'Automatica',
-        luces: document.getElementById('input-luces')?.value || 'SI',
-        display: document.getElementById('input-display')?.value || 'SAFE',
-        obs: document.getElementById('input-obs')?.value || ''
-      };
-    }
-
-    function siguientePanel() {
-      guardarDatosPanel(estadoApp.salaActual.panels[estadoApp.panelIndexActual]);
-      if (estadoApp.panelIndexActual < estadoApp.salaActual.panels.length - 1) {
-        estadoApp.panelIndexActual++;
-        renderizar();
+    const saveInspectionToStorage = (record) => {
+      try {
+        const current = getStoredInspections();
+        const updated = [record, ...current.filter(item => item.id !== record.id)];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
       }
-    }
+    };
 
-    function panelAnterior() {
-      guardarDatosPanel(estadoApp.salaActual.panels[estadoApp.panelIndexActual]);
-      if (estadoApp.panelIndexActual > 0) {
-        estadoApp.panelIndexActual--;
-        renderizar();
+    const deleteInspectionFromStorage = (id) => {
+      try {
+        const current = getStoredInspections();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(current.filter(i => i.id !== id)));
+      } catch (e) {
+        console.error(e);
       }
-    }
+    };
 
-    function seleccionarSala(id) {
-      estadoApp.salaActual = ROOMS.find(r => r.id === id);
-      estadoApp.panelIndexActual = 0;
-      estadoApp.datosPaneles = {};
-      estadoApp.vista = 'intervencion';
-      renderizar();
-    }
-
-    function seleccionarEmergenciaUptr() {
-      estadoApp.salaActual = ROOMS.find(r => r.id === 'sala-utpr');
-      estadoApp.modo = 'emergencia';
-      estadoApp.panelIndexActual = 0;
-      estadoApp.vista = 'intervencion';
-      renderizar();
-    }
-
-    function cambiarModo(m) {
-      estadoApp.modo = m;
-      renderizar();
-    }
-
-    function volverInicio() {
-      estadoApp.vista = 'salas';
-      estadoApp.salaActual = null;
-      renderizar();
-    }
-
-    function cambiarVista(v) {
-      estadoApp.vista = v;
-      renderizar();
-    }
-
-    async function finalizarInspeccion() {
-      guardarDatosPanel(estadoApp.salaActual.panels[estadoApp.panelIndexActual]);
-      const fecha = new Date().toISOString().slice(0, 10);
-      const hora = new Date().toLocaleTimeString();
-
-      const resumenDetalles = Object.keys(estadoApp.datosPaneles).map(th => {
-        const d = estadoApp.datosPaneles[th];
-        return `TH ${th} [${d.estado}] - Aislación: ${d.aislacion}, Sel: ${d.selectora}, Display: ${d.display} (${d.obs})`;
-      }).join(' | ');
-
-      const payload = {
-        tipo_inspeccion: estadoApp.modo === 'emergencia' ? 'Emergencia/Alarma' : 'Check List',
-        fecha,
-        hora,
-        sala: estadoApp.salaActual.name,
-        tablero_afectado: 'Secuencia Completa (' + estadoApp.salaActual.panels.join(', ') + ')',
-        observaciones: resumenDetalles || 'Inspección secuencial completada',
-        operarios: "Murillo José Luis" // Operario predeterminado o firmante
-      };
-
+    // FUNCIÓN POST VÍA FETCH A GOOGLE APPS SCRIPT
+    const postToGoogleAppsScript = async (payload) => {
       try {
         await fetch(GOOGLE_APPS_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         });
-        alert('¡Inspección de todos los TH sincronizada con éxito en Google Sheets!');
-
-        const historial = JSON.parse(localStorage.getItem('th_historial_v3') || '[]');
-        historial.unshift({ sala: estadoApp.salaActual.name, modo: estadoApp.modo, fecha, operarios: payload.operarios });
-        localStorage.setItem('th_historial_v3', JSON.stringify(historial));
-
-        volverInicio();
-      } catch (e) {
-        alert('Error al enviar al servidor.');
+        return true;
+      } catch (err) {
+        console.error('Error al contactar Google Apps Script:', err);
+        throw err;
       }
+    };
+
+    const formatInspectionForWhatsApp = (record) => {
+      const modeLabels = {
+        emergencia: '🚨 EMERGENCIA / ALARMA',
+        checklist: '📋 CHECK LIST DE TABLEROS',
+        control: '🔬 CONTROL DE MONITOR DE AISLACIÓN',
+      };
+      const lines = [
+        `*INSPECCIÓN OPERATIVA TABLEROS HOSPITALARIOS*`,
+        `🏥 *Edificio "B" Maternidad*`,
+        `📍 *Sala:* ${record.roomName}`,
+        `🗓 *Fecha:* ${record.date} | ⏰ *Hora:* ${record.time}`,
+        `📌 *Tipo de Control:* ${modeLabels[record.mode]}`,
+        `👷 *Operarios:* ${record.operators.length > 0 ? record.operators.join(', ') : 'No especificado'}`,
+        `📊 *Estado Global:* ${record.summaryStatus.toUpperCase()}`,
+        `----------------------------------------`,
+      ];
+
+      if (record.mode === 'emergencia' && record.emergencyData) {
+        const em = record.emergencyData;
+        lines.push(
+          `⚡ *Tablero:* TH ${em.targetPanel}`,
+          `🔔 *Alarma Sonora:* Activa`,
+          `🔌 *Tensión Entrada:* ${em.inputVoltage ? 'SÍ ✅' : 'NO ❌'}`,
+          `🔴 *Led Rojos:* ${em.redLedsOn}`,
+          `🔍 *Verificación Cargas:* ${em.loadVerificationDone ? 'SÍ (Apertura secuencial ITM) ✅' : 'NO ❌'}`,
+          `⚠️ *Circuito Defectuoso:* ${em.defectiveCircuitIdentified || 'No identificado'}`,
+          `🔄 *Alimentación:* ${em.powerSource}`,
+          `🔄 *Reset:* ${em.resetAttempted ? 'SÍ' : 'NO'}`,
+          `🟢 *Queda Operativo:* ${em.remainsOperational ? 'SÍ ✅' : 'NO ❌'}`,
+          `🔴 *Fuera de Servicio:* ${em.outOfService ? 'SÍ ⚠️' : 'NO'}`,
+          `📝 *Obs:* ${em.observations || 'Sin observaciones'}`
+        );
+      } else if (record.mode === 'checklist' && record.checklistData) {
+        record.checklistData.forEach((item, index) => {
+          lines.push(`\n[${index + 1}] *Tablero TH ${item.panelNumber}* -> Estado: *${item.status}*`);
+          if (item.status !== 'Fuera de Servicio') {
+            lines.push(`   • Monitor Aislación: ${item.isolationMonitorOk ? 'SÍ (Normal) ✅' : 'NO ⚠️'}`);
+            lines.push(`   • Selectora: ${item.selectorPosition || 'Automática'}`);
+            lines.push(`   • Prueba de Luces: ${item.lightsTestOk ? 'SÍ ✅' : 'NO ❌'}`);
+            if (item.displayValue) lines.push(`   • Display: ${item.displayValue}`);
+          }
+          if (item.observations) lines.push(`   • Obs: ${item.observations}`);
+        });
+      } else if (record.mode === 'control' && record.controlData) {
+        record.controlData.forEach((item, index) => {
+          lines.push(`\n[${index + 1}] *Tablero TH ${item.panelNumber}* -> Estado: *${item.status}*`);
+          if (item.status !== 'Fuera de Servicio') {
+            lines.push(`   • Test Botón: ${item.testResult === 'OK' ? 'OK ✅' : 'ERROR ❌'}`);
+            if (item.measurements) {
+              const m = item.measurements;
+              lines.push(`   • U12: ${m.u12 || '-'}V | U1E: ${m.u1e || '-'}V | U2E: ${m.u2e || '-'}V`);
+              lines.push(`   • Z: ${m.zKohm || '-'} kΩ | C: ${m.cCapacitance || '-'} cF | Temp: ${m.temp || '-'}`);
+            }
+            lines.push(`   • Selectora: ${item.selectorPosition || 'Automática'}`);
+            lines.push(`   • Prueba Luces: ${item.lightsTestOk ? 'SÍ ✅' : 'NO ❌'}`);
+            if (item.isolationMonitorMa) lines.push(`   • mA / Msg: ${item.isolationMonitorMa}`);
+          }
+        });
+      }
+      lines.push(`\n_Enviado desde Sistema Operativo Mantenimiento TH_`);
+      return lines.join('\n');
+    };
+
+    // COMPONENTE: SELECTOR DE OPERARIOS (PUNTO E)
+    const OperatorSelector = ({ selectedOperators, onChange, title = "Operarios Responsables", subtitle = "Seleccione los técnicos intervinientes (Punto E):" }) => {
+      const [custom, setCustom] = useState('');
+      const [showCustom, setShowCustom] = useState(false);
+      const [available, setAvailable] = useState(OPERATORS);
+
+      const toggle = (name) => {
+        onChange(selectedOperators.includes(name) ? selectedOperators.filter(o => o !== name) : [...selectedOperators, name]);
+      };
+
+      const handleAdd = (e) => {
+        e.preventDefault();
+        const t = custom.trim();
+        if (!t) return;
+        if (!available.includes(t)) setAvailable([...available, t]);
+        if (!selectedOperators.includes(t)) onChange([...selectedOperators, t]);
+        setCustom('');
+        setShowCustom(false);
+      };
+
+      return (
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div>
+              <div className="flex items-center gap-2">
+                <Icon name="users" className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                <h3 className="font-semibold text-slate-900 dark:text-white text-base">{title}</h3>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onChange(selectedOperators.length === available.length ? [] : [...available])}
+                className="text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-teal-600 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 min-h-[36px]"
+              >
+                {selectedOperators.length === available.length ? 'Deseleccionar todos' : 'Seleccionar todos'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCustom(!showCustom)}
+                className="text-xs font-medium text-teal-600 dark:text-teal-400 hover:bg-teal-50 px-2.5 py-1.5 rounded-lg border border-teal-200 dark:border-teal-800 min-h-[36px] flex items-center gap-1"
+              >
+                <Icon name="user-plus" className="w-3.5 h-3.5" />
+                <span>{showCustom ? 'Cancelar' : 'Otro técnico'}</span>
+              </button>
+            </div>
+          </div>
+
+          {showCustom && (
+            <form onSubmit={handleAdd} className="mt-3 flex gap-2">
+              <input
+                type="text"
+                value={custom}
+                onChange={(e) => setCustom(e.target.value)}
+                placeholder="Nombre y Apellido del operario..."
+                className="flex-1 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-slate-900 dark:text-white"
+                autoFocus
+              />
+              <button type="submit" className="px-4 py-2 bg-teal-600 text-white text-xs font-bold rounded-lg min-h-[44px]">Agregar</button>
+            </form>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 mt-4">
+            {available.map((op) => {
+              const sel = selectedOperators.includes(op);
+              return (
+                <button
+                  key={op}
+                  type="button"
+                  onClick={() => toggle(op)}
+                  className={`flex items-center justify-between p-3 rounded-xl border text-left transition-all min-h-[48px] ${
+                    sel
+                      ? 'bg-teal-50/80 dark:bg-teal-950/40 border-teal-500 text-teal-950 dark:text-teal-100 ring-1 ring-teal-500/30'
+                      : 'bg-slate-50/70 dark:bg-slate-800/50 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300'
+                  }`}
+                >
+                  <span className="text-sm font-medium truncate">{op}</span>
+                  <div className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 ml-2 border ${sel ? 'bg-teal-600 border-teal-600 text-white' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900'}`}>
+                    {sel && <Icon name="check" className="w-3.5 h-3.5" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-3 pt-2 text-xs text-slate-500 flex justify-between">
+            <span>Seleccionados: <strong>{selectedOperators.length}</strong> operario(s)</span>
+            {selectedOperators.length === 0 && <span className="text-amber-600 font-medium">⚠️ Seleccione al menos un operario</span>}
+          </div>
+        </div>
+      );
+    };
+
+    // FORMULARIO: EMERGENCIA / ALARMA (PUNTO B)
+    const EmergencyForm = ({ room, date, time, onSubmit, onCancel }) => {
+      const [targetPanel, setTargetPanel] = useState(room.panels[0]);
+      const [soundAlarmTriggered, setSoundAlarmTriggered] = useState(true);
+      const [inputVoltage, setInputVoltage] = useState(null);
+      const [redLedsOn, setRedLedsOn] = useState('Fallo Trafo');
+      const [loadVerificationDone, setLoadVerificationDone] = useState(null);
+      const [itmTestedCircuits, setItmTestedCircuits] = useState({
+        'Circuito A': false,
+        'Circuito B': false,
+        'Circuito C': false,
+        'Circuito D': false,
+        'Circuito E': false,
+      });
+      const [defectiveCircuitIdentified, setDefectiveCircuitIdentified] = useState('');
+      const [powerSource, setPowerSource] = useState('Principal');
+      const [resetAttempted, setResetAttempted] = useState(null);
+      const [remainsOperational, setRemainsOperational] = useState(null);
+      const [outOfService, setOutOfService] = useState(null);
+      const [observations, setObservations] = useState('');
+      const [operators, setOperators] = useState([]);
+      const [isSubmitting, setIsSubmitting] = useState(false);
+
+      const handleToggleItm = (c) => {
+        setItmTestedCircuits(prev => ({ ...prev, [c]: !prev[c] }));
+      };
+
+      const resetAllFields = () => {
+        setTargetPanel(room.panels[0]);
+        setInputVoltage(null);
+        setRedLedsOn('Fallo Trafo');
+        setLoadVerificationDone(null);
+        setItmTestedCircuits({ 'Circuito A': false, 'Circuito B': false, 'Circuito C': false, 'Circuito D': false, 'Circuito E': false });
+        setDefectiveCircuitIdentified('');
+        setPowerSource('Principal');
+        setResetAttempted(null);
+        setRemainsOperational(null);
+        setOutOfService(null);
+        setObservations('');
+        setOperators([]);
+      };
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (operators.length === 0) {
+          alert('Por favor seleccione al menos un operario antes de finalizar.');
+          return;
+        }
+        if (inputVoltage === null || loadVerificationDone === null || resetAttempted === null || remainsOperational === null) {
+          alert('Por favor responda las preguntas obligatorias del protocolo.');
+          return;
+        }
+
+        setIsSubmitting(true);
+        const isEffOut = outOfService ?? (remainsOperational === false);
+        const verifiedCircuits = Object.keys(itmTestedCircuits).filter(k => itmTestedCircuits[k]);
+
+        const recordData = {
+          targetPanel,
+          soundAlarmTriggered,
+          inputVoltage,
+          redLedsOn,
+          loadVerificationDone,
+          itmTestedCircuits,
+          defectiveCircuitIdentified: defectiveCircuitIdentified.trim() || undefined,
+          powerSource,
+          resetAttempted,
+          remainsOperational,
+          outOfService: isEffOut,
+          observations,
+          operators,
+        };
+
+        const payload = {
+          tipo_inspeccion: 'Emergencia/Alarma',
+          fecha: date,
+          hora: time,
+          sala: room.name,
+          sala_id: room.id,
+          tablero_afectado: `TH ${targetPanel}`,
+          th_numero: targetPanel,
+          alarma_sonora: soundAlarmTriggered ? 'SI' : 'NO',
+          tension_entrada: inputVoltage ? 'SI' : 'NO',
+          led_rojos_encendidos: redLedsOn,
+          verificacion_cargas: loadVerificationDone ? 'SI' : 'NO',
+          circuitos_itm_abiertos: verifiedCircuits.length > 0 ? verifiedCircuits.join(', ') : 'Ninguno',
+          circuito_defectuoso: defectiveCircuitIdentified.trim() || 'No identificado',
+          alimentaciones: powerSource,
+          resetear: resetAttempted ? 'SI' : 'NO',
+          queda_operativo: remainsOperational ? 'SI' : 'NO',
+          fuera_de_servicio: isEffOut ? 'SI' : 'NO',
+          observaciones: observations.trim() || 'Sin observaciones',
+          operarios: operators.join(', '),
+          operarios_array: operators,
+          calculos_resultantes: {
+            estado_final_tablero: remainsOperational ? 'Operativo' : 'Fuera de Servicio',
+            total_circuitos_comprobados: verifiedCircuits.length,
+            alarma_resuelta: remainsOperational && !isEffOut,
+            timestamp_ms: Date.now(),
+          }
+        };
+
+        try {
+          await postToGoogleAppsScript(payload);
+          alert('Datos registrados correctamente en la planilla');
+          
+          const recordObj = {
+            id: 'insp_' + Date.now(),
+            timestamp: Date.now(),
+            date,
+            time,
+            roomId: room.id,
+            roomName: room.name,
+            mode: 'emergencia',
+            operators,
+            emergencyData: recordData,
+            summaryStatus: remainsOperational ? 'Emergencia Resuelta' : 'Fuera de Servicio',
+          };
+          saveInspectionToStorage(recordObj);
+
+          // Abrir WhatsApp automáticamente al número especificado sin mostrarlo
+          const textMsg = formatInspectionForWhatsApp(recordObj);
+          window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_TARGET_NUMBER}&text=${encodeURIComponent(textMsg)}`, '_blank');
+
+          resetAllFields();
+          onSubmit(recordData);
+        } catch (err) {
+          alert('Error de conexión con la planilla. Guardado localmente en el dispositivo.');
+          onSubmit(recordData);
+        } finally {
+          setIsSubmitting(false);
+        }
+      };
+
+      return (
+        <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto">
+          <div className="bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-400 dark:border-rose-800 rounded-2xl p-4 sm:p-5 text-rose-900 dark:text-rose-200">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0">
+                <Icon name="alert" className="w-6 h-6 animate-pulse" />
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-rose-950 dark:text-rose-100">
+                  Punto B: Protocolo de Emergencia / Alarma Sonora
+                </h2>
+                <p className="text-xs sm:text-sm text-rose-800 dark:text-rose-300 mt-1">
+                  <strong>Nota obligatoria:</strong> Alarma sonora del Tablero y/o Monitor de Aislación. Seleccione individualmente el TH afectado en {room.name}.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Selector de TH individual */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-5 shadow-xs">
+            <label className="block text-sm font-bold text-slate-900 dark:text-white mb-2">
+              1. Seleccione el Tablero Hospitalario individual con Alarma activa:
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2.5">
+              {room.panels.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setTargetPanel(p)}
+                  className={`py-3 px-3 rounded-xl border font-mono font-bold text-sm min-h-[48px] flex items-center justify-center gap-2 ${
+                    targetPanel === p
+                      ? 'bg-rose-600 text-white border-rose-600 shadow-sm ring-2 ring-rose-400'
+                      : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                  }`}
+                >
+                  <span>TH {p}</span>
+                  {targetPanel === p && <Icon name="alert" className="w-4 h-4 text-white" />}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 sm:p-6 shadow-xs space-y-6">
+            <h3 className="font-bold text-slate-900 dark:text-white text-base pb-3 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+              <Icon name="zap" className="w-5 h-5 text-amber-500" />
+              <span>Verificaciones Eléctricas en TH {targetPanel}</span>
+            </h3>
+
+            {/* Tensión Entrada */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+              <div>
+                <span className="font-semibold text-slate-900 dark:text-white text-sm block">Tensión de Entrada</span>
+                <span className="text-xs text-slate-500">¿Hay presencia de tensión de alimentación a la entrada?</span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button type="button" onClick={() => setInputVoltage(true)} className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold min-h-[44px] min-w-[70px] ${inputVoltage === true ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-800 border text-slate-700 dark:text-slate-300'}`}>SÍ</button>
+                <button type="button" onClick={() => setInputVoltage(false)} className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold min-h-[44px] min-w-[70px] ${inputVoltage === false ? 'bg-rose-600 text-white' : 'bg-white dark:bg-slate-800 border text-slate-700 dark:text-slate-300'}`}>NO</button>
+              </div>
+            </div>
+
+            {/* Led Rojos */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+              <div>
+                <span className="font-semibold text-slate-900 dark:text-white text-sm block">Led Rojos Encendidos</span>
+                <span className="text-xs text-slate-500">Seleccione la falla indicada en el panel:</span>
+              </div>
+              <select value={redLedsOn} onChange={(e) => setRedLedsOn(e.target.value)} className="w-full sm:w-60 text-sm font-semibold bg-white dark:bg-slate-800 border rounded-xl px-3 py-2.5 min-h-[44px]">
+                <option value="Fallo Trafo">Fallo Trafo (Transformador)</option>
+                <option value="Sobretensión">Sobretensión</option>
+              </select>
+            </div>
+
+            {/* Verificación de Cargas & Asistente ITM */}
+            <div className="p-4 bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 rounded-xl space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="font-bold text-amber-900 dark:text-amber-200 text-sm block">Verificación de Cargas (SI / NO)</span>
+                  <span className="text-xs text-amber-800 dark:text-amber-300">¿Se ejecutó la localización metódica por circuitos?</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button type="button" onClick={() => setLoadVerificationDone(true)} className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold min-h-[44px] min-w-[70px] ${loadVerificationDone === true ? 'bg-amber-600 text-white' : 'bg-white dark:bg-slate-800 border text-slate-700 dark:text-slate-300'}`}>SÍ</button>
+                  <button type="button" onClick={() => setLoadVerificationDone(false)} className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold min-h-[44px] min-w-[70px] ${loadVerificationDone === false ? 'bg-slate-700 text-white' : 'bg-white dark:bg-slate-800 border text-slate-700 dark:text-slate-300'}`}>NO</button>
+                </div>
+              </div>
+
+              <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border text-xs text-slate-700 dark:text-slate-300 space-y-2">
+                <span className="font-bold text-amber-700 dark:text-amber-400 block">📋 PROTOCOLO TÉCNICO OBLIGATORIO:</span>
+                <p className="font-medium text-slate-800 dark:text-slate-200 leading-relaxed">
+                  "ABRIR ITM DE CADA CIRCUITO UNO A LA VEZ PARA SABER CUAL ES EL QUE ESTÁ ORIGINANDO INCONVENIENTE. LUEGO DE SABER EL CIRCUITO, IR DESENCHUFANDO LOS EQUIPOS CONECTADOS PARA EVALUAR CUAL DE TODOS ES EL QUE SE ENCUENTRA DEFECTUOSO."
+                </p>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {['Circuito A', 'Circuito B', 'Circuito C', 'Circuito D', 'Circuito E'].map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => handleToggleItm(c)}
+                      className={`px-2.5 py-1.5 rounded-lg text-xs font-mono font-medium border ${itmTestedCircuits[c] ? 'bg-teal-600 border-teal-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}
+                    >
+                      {c} {itmTestedCircuits[c] ? '✓' : ''}
+                    </button>
+                  ))}
+                </div>
+                <input
+                  type="text"
+                  value={defectiveCircuitIdentified}
+                  onChange={(e) => setDefectiveCircuitIdentified(e.target.value)}
+                  placeholder="Detalle de equipo defectuoso detectado..."
+                  className="w-full text-xs bg-slate-50 dark:bg-slate-800 border rounded-lg px-3 py-2 mt-1"
+                />
+              </div>
+            </div>
+
+            {/* Alimentaciones */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+              <div>
+                <span className="font-semibold text-slate-900 dark:text-white text-sm block">Alimentaciones</span>
+                <span className="text-xs text-slate-500">Fuente de energía conmutada:</span>
+              </div>
+              <select value={powerSource} onChange={(e) => setPowerSource(e.target.value)} className="w-full sm:w-60 text-sm font-semibold bg-white dark:bg-slate-800 border rounded-xl px-3 py-2.5 min-h-[44px]">
+                <option value="Principal">Principal (Red Eléctrica)</option>
+                <option value="Alternativa">Alternativa (Grupo/UPS)</option>
+              </select>
+            </div>
+
+            {/* Resetear */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+              <div>
+                <span className="font-semibold text-slate-900 dark:text-white text-sm block">Resetear</span>
+                <span className="text-xs text-slate-500">¿Se accionó el botón Reset en el monitor?</span>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button type="button" onClick={() => setResetAttempted(true)} className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold min-h-[44px] min-w-[70px] ${resetAttempted === true ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-800 border text-slate-700 dark:text-slate-300'}`}>SÍ</button>
+                <button type="button" onClick={() => setResetAttempted(false)} className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold min-h-[44px] min-w-[70px] ${resetAttempted === false ? 'bg-slate-700 text-white' : 'bg-white dark:bg-slate-800 border text-slate-700 dark:text-slate-300'}`}>NO</button>
+              </div>
+            </div>
+
+            {/* Queda Operativo & Fuera de Servicio */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl flex items-center justify-between">
+                <div>
+                  <span className="font-semibold text-slate-900 dark:text-white text-sm block">Queda Operativo</span>
+                  <span className="text-xs text-slate-500">¿Presta servicio normalmente?</span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button type="button" onClick={() => { setRemainsOperational(true); setOutOfService(false); }} className={`px-3 py-2 rounded-xl text-xs font-bold min-h-[44px] min-w-[55px] ${remainsOperational === true ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-800 border'}`}>SÍ</button>
+                  <button type="button" onClick={() => { setRemainsOperational(false); setOutOfService(true); }} className={`px-3 py-2 rounded-xl text-xs font-bold min-h-[44px] min-w-[55px] ${remainsOperational === false ? 'bg-rose-600 text-white' : 'bg-white dark:bg-slate-800 border'}`}>NO</button>
+                </div>
+              </div>
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl flex items-center justify-between">
+                <div>
+                  <span className="font-semibold text-slate-900 dark:text-white text-sm block">Fuera de Servicio</span>
+                  <span className="text-xs text-slate-500">¿Queda fuera de servicio?</span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button type="button" onClick={() => { setOutOfService(true); setRemainsOperational(false); }} className={`px-3 py-2 rounded-xl text-xs font-bold min-h-[44px] min-w-[55px] ${outOfService === true ? 'bg-rose-600 text-white' : 'bg-white dark:bg-slate-800 border'}`}>SÍ</button>
+                  <button type="button" onClick={() => setOutOfService(false)} className={`px-3 py-2 rounded-xl text-xs font-bold min-h-[44px] min-w-[55px] ${outOfService === false ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-800 border'}`}>NO</button>
+                </div>
+              </div>
+            </div>
+
+            {/* Observaciones */}
+            <div>
+              <label className="block text-sm font-bold text-slate-900 dark:text-white mb-1.5">2. Observaciones:</label>
+              <textarea
+                rows={3}
+                value={observations}
+                onChange={(e) => setObservations(e.target.value)}
+                placeholder="Detalles de la falla, estado de cunas o medidas con personal de enfermería..."
+                className="w-full text-sm bg-slate-50 dark:bg-slate-800 border rounded-xl p-3 text-slate-900 dark:text-white"
+              />
+            </div>
+          </div>
+
+          <OperatorSelector selectedOperators={operators} onChange={setOperators} title="3. Operarios Intervinientes" />
+
+          {/* BOTÓN FINALIZAR Y ENVIAR RESPUESTAS */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+            <button type="button" onClick={onCancel} disabled={isSubmitting} className="w-full sm:w-auto px-5 py-3 rounded-xl border text-slate-700 dark:text-slate-300 font-semibold text-sm min-h-[48px]">
+              Cancelar / Volver
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-7 py-3 bg-rose-600 hover:bg-rose-700 disabled:bg-rose-400 text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 min-h-[48px]"
+            >
+              {isSubmitting ? (
+                <>
+                  <Icon name="loader" className="w-4 h-4" />
+                  <span>ENVIANDO DATOS A LA PLANILLA...</span>
+                </>
+              ) : (
+                <>
+                  <Icon name="send" className="w-4 h-4" />
+                  <span>FINALIZAR Y ENVIAR RESPUESTAS</span>
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      );
+    };
+
+    // FORMULARIO: CHECK LIST (PUNTO C)
+    const ChecklistWizard = ({ room, date, time, onSubmit, onCancel }) => {
+      const createDefault = (panels) => panels.map(p => ({
+        panelNumber: p,
+        status: 'Funcionando',
+        isolationMonitorOk: true,
+        lightIndicators: { uNormal: true, uAlternativa: false, uPrincipal: true, uCircuitoA: true, uCircuitoB: true, uCircuitoC: true, uCircuitoD: true, uCircuitoE: true },
+        selectorPosition: 'Automática',
+        lightsTestOk: true,
+        displayValue: '',
+        observations: '',
+      }));
+
+      const [panelRecords, setPanelRecords] = useState(() => createDefault(room.panels));
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const [operators, setOperators] = useState([]);
+      const [showOperators, setShowOperators] = useState(false);
+      const [isSubmitting, setIsSubmitting] = useState(false);
+
+      const currentPanel = room.panels[currentIndex];
+      const currentData = panelRecords[currentIndex];
+
+      const updateCurrent = (patch) => {
+        setPanelRecords(prev => {
+          const next = [...prev];
+          next[currentIndex] = { ...next[currentIndex], ...patch };
+          return next;
+        });
+      };
+
+      const handleSetAllLights = (val) => {
+        updateCurrent({
+          lightIndicators: { uNormal: val, uAlternativa: val, uPrincipal: val, uCircuitoA: val, uCircuitoB: val, uCircuitoC: val, uCircuitoD: val, uCircuitoE: val }
+        });
+      };
+
+      const handleToggleLight = (key) => {
+        updateCurrent({
+          lightIndicators: { ...currentData.lightIndicators, [key]: !currentData.lightIndicators[key] }
+        });
+      };
+
+      const handleNext = () => {
+        if (currentIndex < room.panels.length - 1) {
+          setCurrentIndex(currentIndex + 1);
+        } else {
+          setShowOperators(true);
+        }
+      };
+
+      const resetAllFields = () => {
+        setPanelRecords(createDefault(room.panels));
+        setOperators([]);
+        setCurrentIndex(0);
+        setShowOperators(false);
+      };
+
+      const handleFinalSubmit = async (e) => {
+        e.preventDefault();
+        if (operators.length === 0) {
+          alert('Por favor seleccione al menos un operario.');
+          return;
+        }
+
+        setIsSubmitting(true);
+        const total = panelRecords.length;
+        const funcCount = panelRecords.filter(p => p.status === 'Funcionando').length;
+        const alertCount = panelRecords.filter(p => p.status === 'Alerta').length;
+        const outCount = panelRecords.filter(p => p.status === 'Fuera de Servicio').length;
+        const rate = ((funcCount / total) * 100).toFixed(1) + '%';
+        const globalStatus = outCount > 0 ? 'Fuera de Servicio' : alertCount > 0 ? 'Con Alerta' : 'Operativo';
+
+        const payload = {
+          tipo_inspeccion: 'Check List',
+          fecha: date,
+          hora: time,
+          sala: room.name,
+          sala_id: room.id,
+          operarios: operators.join(', '),
+          operarios_array: operators,
+          total_tableros_evaluados: total,
+          detalle_tableros: panelRecords.map(p => ({
+            th: p.panelNumber,
+            estado_operativo: p.status,
+            monitor_aislacion_ok: p.isolationMonitorOk ? 'SI' : 'NO',
+            indicadores_luces: p.lightIndicators,
+            selectora: p.selectorPosition || 'Automática',
+            prueba_luces: p.lightsTestOk ? 'SI' : 'NO',
+            display: p.displayValue || 'N/A',
+            obs: p.observations || ''
+          })),
+          calculos_resultantes: {
+            tableros_funcionando: funcCount,
+            tableros_en_alerta: alertCount,
+            tableros_fuera_servicio: outCount,
+            porcentaje_operatividad: rate,
+            estado_global: globalStatus,
+            timestamp_ms: Date.now()
+          }
+        };
+
+        const recordsCopy = [...panelRecords];
+        const operatorsCopy = [...operators];
+
+        try {
+          await postToGoogleAppsScript(payload);
+          alert('Datos registrados correctamente en la planilla');
+          
+          const recordObj = {
+            id: 'insp_' + Date.now(),
+            timestamp: Date.now(),
+            date,
+            time,
+            roomId: room.id,
+            roomName: room.name,
+            mode: 'checklist',
+            operators: operatorsCopy,
+            checklistData: recordsCopy,
+            summaryStatus: globalStatus,
+          };
+          saveInspectionToStorage(recordObj);
+
+          resetAllFields();
+          onSubmit(recordsCopy, operatorsCopy);
+        } catch (err) {
+          alert('Error de conexión con la planilla. Guardado localmente en el dispositivo.');
+          onSubmit(recordsCopy, operatorsCopy);
+        } finally {
+          setIsSubmitting(false);
+        }
+      };
+
+      return (
+        <div className="space-y-6 max-w-4xl mx-auto">
+          {/* Barra de progreso de tableros */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border p-4 sm:p-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b gap-2">
+              <div>
+                <span className="text-xs font-mono font-bold text-teal-600 uppercase">Punto C · Check List</span>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">{room.name}</h2>
+              </div>
+              <span className="text-xs font-mono text-slate-500">{date} · {time}</span>
+            </div>
+
+            <div className="mt-4 flex items-center gap-1.5 overflow-x-auto pb-1">
+              {room.panels.map((p, idx) => {
+                const isCur = !showOperators && idx === currentIndex;
+                const status = panelRecords[idx]?.status;
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => { setShowOperators(false); setCurrentIndex(idx); }}
+                    className={`px-3 py-2 rounded-xl text-xs font-mono font-bold whitespace-nowrap border min-h-[40px] ${
+                      isCur
+                        ? 'bg-teal-600 text-white border-teal-600'
+                        : status === 'Fuera de Servicio'
+                        ? 'bg-rose-50 text-rose-700 border-rose-300'
+                        : status === 'Alerta'
+                        ? 'bg-amber-50 text-amber-800 border-amber-300'
+                        : 'bg-slate-50 dark:bg-slate-800 border-slate-200 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    TH {p} {status === 'Fuera de Servicio' ? '⛔' : status === 'Alerta' ? '⚠️' : ''}
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                onClick={() => setShowOperators(true)}
+                className={`px-3 py-2 rounded-xl text-xs font-bold border min-h-[40px] ${showOperators ? 'bg-teal-600 text-white' : 'bg-slate-50 dark:bg-slate-800'}`}
+              >
+                Operarios & Envío ({operators.length})
+              </button>
+            </div>
+          </div>
+
+          {!showOperators ? (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border p-4 sm:p-6 shadow-xs space-y-6">
+              {/* Paso 1: Estado Operativo */}
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="text-xs font-mono font-bold text-teal-600 uppercase">Paso 1 · TH {currentPanel} ({currentIndex + 1} de {room.panels.length})</span>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Estado Operativo</h3>
+                </div>
+                <select
+                  value={currentData.status}
+                  onChange={(e) => updateCurrent({ status: e.target.value })}
+                  className="w-full sm:w-64 text-sm font-bold bg-white dark:bg-slate-900 border rounded-xl px-3 py-2.5 min-h-[44px]"
+                >
+                  <option value="Funcionando">🟢 Funcionando</option>
+                  <option value="Alerta">🟡 Alerta</option>
+                  <option value="Fuera de Servicio">🔴 Fuera de Servicio</option>
+                </select>
+              </div>
+
+              {currentData.status === 'Fuera de Servicio' ? (
+                <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 rounded-xl text-xs text-rose-800 dark:text-rose-200">
+                  <strong>Regla Punto C.1:</strong> Tablero Fuera de Servicio. Se omite el paso 2 y se pasa directamente al siguiente registro.
+                  <div className="mt-3">
+                    <button type="button" onClick={handleNext} className="px-4 py-2 bg-rose-600 text-white font-bold rounded-lg flex items-center gap-1.5">
+                      <span>Continuar al siguiente TH</span>
+                      <Icon name="arrow-right" className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6 pt-1">
+                  {/* Monitor de Aislación */}
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <span className="font-semibold text-sm block">Monitor de Aislación (SI / NO)</span>
+                        <span className="text-xs text-slate-500">¿Parámetros normales de aislación?</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button type="button" onClick={() => updateCurrent({ isolationMonitorOk: true })} className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold min-h-[44px] min-w-[70px] ${currentData.isolationMonitorOk === true ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-800 border'}`}>SÍ</button>
+                        <button type="button" onClick={() => updateCurrent({ isolationMonitorOk: false })} className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold min-h-[44px] min-w-[70px] ${currentData.isolationMonitorOk === false ? 'bg-amber-600 text-white' : 'bg-white dark:bg-slate-800 border'}`}>NO</button>
+                      </div>
+                    </div>
+                    <div className="text-[11px] text-amber-700 dark:text-amber-400 font-medium bg-amber-50 dark:bg-amber-950/40 p-2 rounded-lg border border-amber-200">
+                      ⚠️ <strong>Nota:</strong> SI HAY ALARMA LEVE, VERIFICAR EQUIPOS CONECTADOS
+                    </div>
+                  </div>
+
+                  {/* Indicadores Luminosos */}
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b">
+                      <div>
+                        <span className="font-semibold text-sm block">Indicadores Luminosos</span>
+                        <span className="text-xs text-slate-500">Visualizar "SI" está encendido o "NO" (apagado):</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button type="button" onClick={() => handleSetAllLights(true)} className="text-xs text-teal-600 px-2 py-1 border rounded">Todos SÍ (ON)</button>
+                        <button type="button" onClick={() => handleSetAllLights(false)} className="text-xs text-slate-500 px-2 py-1 border rounded">Todos NO (OFF)</button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                      {LIGHT_INDICATOR_KEYS.map((k) => {
+                        const lit = Boolean(currentData.lightIndicators?.[k.key]);
+                        return (
+                          <button
+                            key={k.key}
+                            type="button"
+                            onClick={() => handleToggleLight(k.key)}
+                            className={`p-3 rounded-xl border text-left flex items-center justify-between min-h-[56px] ${lit ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 text-emerald-900 dark:text-emerald-100' : 'bg-white dark:bg-slate-900 text-slate-500'}`}
+                          >
+                            <span className="text-xs font-mono font-bold truncate pr-1">{k.label}</span>
+                            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${lit ? 'bg-emerald-500 text-white' : 'bg-slate-200 dark:bg-slate-700'}`}>{lit ? 'SÍ' : 'NO'}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Selectora y Prueba de Luces */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                      <span className="font-semibold text-sm block mb-1">Posición de Selectora</span>
+                      <select value={currentData.selectorPosition} onChange={(e) => updateCurrent({ selectorPosition: e.target.value })} className="w-full text-sm font-semibold bg-white dark:bg-slate-900 border rounded-xl px-3 py-2 min-h-[44px]">
+                        <option value="Automática">Automática (Normal)</option>
+                        <option value="Principal">Principal</option>
+                        <option value="Alternativa">Alternativa</option>
+                      </select>
+                    </div>
+                    <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl flex items-center justify-between">
+                      <div>
+                        <span className="font-semibold text-sm block">Prueba de Luces</span>
+                        <span className="text-xs text-slate-500">Test lámparas (SI / NO)</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button type="button" onClick={() => updateCurrent({ lightsTestOk: true })} className={`px-3 py-2 rounded-xl text-xs font-bold min-h-[44px] min-w-[55px] ${currentData.lightsTestOk === true ? 'bg-emerald-600 text-white' : 'bg-white dark:bg-slate-800 border'}`}>SÍ</button>
+                        <button type="button" onClick={() => updateCurrent({ lightsTestOk: false })} className={`px-3 py-2 rounded-xl text-xs font-bold min-h-[44px] min-w-[55px] ${currentData.lightsTestOk === false ? 'bg-rose-600 text-white' : 'bg-white dark:bg-slate-800 border'}`}>NO</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Display & Observación */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold mb-1">Valor en Display (Anotar):</label>
+                      <input type="text" value={currentData.displayValue || ''} onChange={(e) => updateCurrent({ displayValue: e.target.value })} placeholder="Ej: > 500 kΩ / SAFE / 230 V" className="w-full text-sm font-mono bg-slate-50 dark:bg-slate-800 border rounded-xl px-3 py-2.5 min-h-[44px]" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold mb-1">Observación:</label>
+                      <input type="text" value={currentData.observations || ''} onChange={(e) => updateCurrent({ observations: e.target.value })} placeholder="Observaciones particulares..." className="w-full text-sm bg-slate-50 dark:bg-slate-800 border rounded-xl px-3 py-2.5 min-h-[44px]" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Controles de avance */}
+              <div className="flex items-center justify-between pt-4 border-t">
+                <button type="button" onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))} disabled={currentIndex === 0} className="px-4 py-2.5 rounded-xl border text-xs font-semibold disabled:opacity-40 min-h-[44px]">Anterior</button>
+                <button type="button" onClick={handleNext} className="px-5 py-2.5 bg-teal-600 text-white rounded-xl text-xs font-bold min-h-[44px]">
+                  {currentIndex < room.panels.length - 1 ? `Siguiente (TH ${room.panels[currentIndex + 1]})` : 'Paso a Operarios y Envío'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <OperatorSelector selectedOperators={operators} onChange={setOperators} title="Operarios del Check List" />
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                <button type="button" onClick={() => setShowOperators(false)} disabled={isSubmitting} className="w-full sm:w-auto px-5 py-3 rounded-xl border font-semibold text-sm min-h-[48px]">Volver a Tableros</button>
+                <button
+                  type="button"
+                  onClick={handleFinalSubmit}
+                  disabled={isSubmitting}
+                  className="w-full sm:w-auto px-7 py-3 bg-teal-600 hover:bg-teal-700 disabled:bg-teal-400 text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 min-h-[48px]"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Icon name="loader" className="w-4 h-4" />
+                      <span>ENVIANDO DATOS A LA PLANILLA...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="send" className="w-4 h-4" />
+                      <span>FINALIZAR Y ENVIAR RESPUESTAS</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // FORMULARIO: CONTROL DE MONITOR DE AISLACIÓN (PUNTO D)
+    const ControlWizard = ({ room, date, time, onSubmit, onCancel }) => {
+      const createDefault = (panels) => panels.map(p => ({
+        panelNumber: p,
+        status: 'Funcionando',
+        testResult: 'OK',
+        measurements: { u12: '230', u1e: '115', u2e: '115', zKohm: '> 500', cCapacitance: '12', temp: 'OK' },
+        selectorPosition: 'Automática',
+        lightsTestOk: true,
+        isolationMonitorMa: '0.2 mA - SAFE',
+        observations: '',
+      }));
+
+      const [panelRecords, setPanelRecords] = useState(() => createDefault(room.panels));
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const [operators, setOperators] = useState([]);
+      const [showOperators, setShowOperators] = useState(false);
+      const [isHolding, setIsHolding] = useState(false);
+      const [holdProgress, setHoldProgress] = useState(0);
+      const [isSubmitting, setIsSubmitting] = useState(false);
+      const timerRef = useRef(null);
+
+      const currentPanel = room.panels[currentIndex];
+      const currentData = panelRecords[currentIndex];
+
+      const updateCurrent = (patch) => {
+        setPanelRecords(prev => {
+          const next = [...prev];
+          next[currentIndex] = { ...next[currentIndex], ...patch };
+          return next;
+        });
+      };
+
+      const updateMeasurement = (key, val) => {
+        updateCurrent({
+          measurements: { ...currentData.measurements, [key]: val }
+        });
+      };
+
+      const startHold = () => {
+        setIsHolding(true);
+        setHoldProgress(0);
+        timerRef.current = setInterval(() => {
+          setHoldProgress(p => {
+            if (p >= 100) {
+              clearInterval(timerRef.current);
+              setIsHolding(false);
+              updateCurrent({ testResult: 'OK' });
+              return 100;
+            }
+            return p + 5;
+          });
+        }, 50);
+      };
+
+      const cancelHold = () => {
+        if (timerRef.current) clearInterval(timerRef.current);
+        setIsHolding(false);
+        setHoldProgress(0);
+      };
+
+      const handleNext = () => {
+        if (currentIndex < room.panels.length - 1) {
+          setCurrentIndex(currentIndex + 1);
+        } else {
+          setShowOperators(true);
+        }
+      };
+
+      const resetAllFields = () => {
+        setPanelRecords(createDefault(room.panels));
+        setOperators([]);
+        setCurrentIndex(0);
+        setShowOperators(false);
+        setHoldProgress(0);
+      };
+
+      const handleFinalSubmit = async (e) => {
+        e.preventDefault();
+        if (operators.length === 0) {
+          alert('Por favor seleccione al menos un operario.');
+          return;
+        }
+
+        setIsSubmitting(true);
+        const total = panelRecords.length;
+        const funcCount = panelRecords.filter(p => p.status === 'Funcionando').length;
+        const alertCount = panelRecords.filter(p => p.status === 'Alerta').length;
+        const outCount = panelRecords.filter(p => p.status === 'Fuera de Servicio').length;
+        const okCount = panelRecords.filter(p => p.testResult === 'OK').length;
+        const errCount = panelRecords.filter(p => p.testResult === 'Error').length;
+        const rate = ((funcCount / total) * 100).toFixed(1) + '%';
+        const globalStatus = outCount > 0 ? 'Fuera de Servicio' : alertCount > 0 ? 'Con Alerta' : 'Operativo';
+
+        const payload = {
+          tipo_inspeccion: 'Control',
+          fecha: date,
+          hora: time,
+          sala: room.name,
+          sala_id: room.id,
+          operarios: operators.join(', '),
+          operarios_array: operators,
+          total_tableros_evaluados: total,
+          detalle_tableros: panelRecords.map(p => ({
+            th: p.panelNumber,
+            estado_operativo: p.status,
+            test_autotest_resultado: p.testResult || 'OK',
+            mediciones: p.measurements,
+            selectora: p.selectorPosition || 'Automática',
+            prueba_luces: p.lightsTestOk ? 'SI' : 'NO',
+            monitor_ma: p.isolationMonitorMa || 'SAFE',
+            obs: p.observations || ''
+          })),
+          calculos_resultantes: {
+            tableros_funcionando: funcCount,
+            tableros_en_alerta: alertCount,
+            tableros_fuera_servicio: outCount,
+            pruebas_test_ok: okCount,
+            pruebas_test_error: errCount,
+            porcentaje_operatividad: rate,
+            estado_global: globalStatus,
+            timestamp_ms: Date.now()
+          }
+        };
+
+        const recordsCopy = [...panelRecords];
+        const operatorsCopy = [...operators];
+
+        try {
+          await postToGoogleAppsScript(payload);
+          alert('Datos registrados correctamente en la planilla');
+          
+          const recordObj = {
+            id: 'insp_' + Date.now(),
+            timestamp: Date.now(),
+            date,
+            time,
+            roomId: room.id,
+            roomName: room.name,
+            mode: 'control',
+            operators: operatorsCopy,
+            controlData: recordsCopy,
+            summaryStatus: globalStatus,
+          };
+          saveInspectionToStorage(recordObj);
+
+          resetAllFields();
+          onSubmit(recordsCopy, operatorsCopy);
+        } catch (err) {
+          alert('Error de conexión con la planilla. Guardado localmente en el dispositivo.');
+          onSubmit(recordsCopy, operatorsCopy);
+        } finally {
+          setIsSubmitting(false);
+        }
+      };
+
+      return (
+        <div className="space-y-6 max-w-4xl mx-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border p-4 sm:p-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b gap-2">
+              <div>
+                <span className="text-xs font-mono font-bold text-blue-600 uppercase">Punto D · Control de Monitor</span>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">{room.name}</h2>
+              </div>
+              <span className="text-xs font-mono text-slate-500">{date} · {time}</span>
+            </div>
+
+            <div className="mt-4 flex items-center gap-1.5 overflow-x-auto pb-1">
+              {room.panels.map((p, idx) => (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => { setShowOperators(false); setCurrentIndex(idx); }}
+                  className={`px-3 py-2 rounded-xl text-xs font-mono font-bold whitespace-nowrap border min-h-[40px] ${
+                    !showOperators && idx === currentIndex ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-50 dark:bg-slate-800'
+                  }`}
+                >
+                  TH {p}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => setShowOperators(true)}
+                className={`px-3 py-2 rounded-xl text-xs font-bold border min-h-[40px] ${showOperators ? 'bg-blue-600 text-white' : 'bg-slate-50 dark:bg-slate-800'}`}
+              >
+                Operarios & Envío ({operators.length})
+              </button>
+            </div>
+          </div>
+
+          {!showOperators ? (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border p-4 sm:p-6 shadow-xs space-y-6">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="text-xs font-mono font-bold text-blue-600 uppercase">Paso 1 · TH {currentPanel}</span>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Estado Operativo en Monitor</h3>
+                </div>
+                <select
+                  value={currentData.status}
+                  onChange={(e) => updateCurrent({ status: e.target.value })}
+                  className="w-full sm:w-64 text-sm font-bold bg-white dark:bg-slate-900 border rounded-xl px-3 py-2.5 min-h-[44px]"
+                >
+                  <option value="Funcionando">🟢 Funcionando</option>
+                  <option value="Alerta">🟡 Alerta</option>
+                  <option value="Fuera de Servicio">🔴 Fuera de Servicio</option>
+                </select>
+              </div>
+
+              {currentData.status === 'Fuera de Servicio' ? (
+                <div className="p-4 bg-rose-50 border rounded-xl text-xs text-rose-800">
+                  <strong>Regla Punto D.1:</strong> Tablero fuera de servicio. Se omite el paso de mediciones.
+                  <div className="mt-3">
+                    <button type="button" onClick={handleNext} className="px-4 py-2 bg-rose-600 text-white font-bold rounded-lg flex items-center gap-1.5">
+                      Continuar al siguiente TH <Icon name="arrow-right" className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Botón Test Mantener presionado */}
+                  <div className="p-4 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 rounded-xl space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <span className="font-bold text-sm block">"Test" (OK / Error)</span>
+                        <span className="text-xs text-blue-800 font-medium">Nota: MANTENER PRESIONADO PARA QUE COMIENCE</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button type="button" onClick={() => updateCurrent({ testResult: 'OK' })} className={`px-4 py-2 rounded-xl text-xs font-bold min-h-[44px] ${currentData.testResult === 'OK' ? 'bg-emerald-600 text-white' : 'bg-white border'}`}>OK</button>
+                        <button type="button" onClick={() => updateCurrent({ testResult: 'Error' })} className={`px-4 py-2 rounded-xl text-xs font-bold min-h-[44px] ${currentData.testResult === 'Error' ? 'bg-rose-600 text-white' : 'bg-white border'}`}>ERROR</button>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 flex items-center gap-3">
+                      <button
+                        type="button"
+                        onMouseDown={startHold}
+                        onMouseUp={cancelHold}
+                        onTouchStart={startHold}
+                        onTouchEnd={cancelHold}
+                        className="relative overflow-hidden px-5 py-3 rounded-xl bg-blue-600 text-white font-bold text-xs select-none min-h-[48px] flex items-center gap-2"
+                      >
+                        <div className="absolute left-0 top-0 bottom-0 bg-emerald-500 opacity-60" style={{ width: `${holdProgress}%` }} />
+                        <Icon name="gauge" className="w-4 h-4 relative z-10" />
+                        <span className="relative z-10">{isHolding ? `Probando (${holdProgress}%)...` : 'Presionar y mantener para Test'}</span>
+                      </button>
+                      <span className="text-xs text-slate-500">{currentData.testResult === 'OK' ? '✓ Autotest verificado OK' : '⚠️ Test reportado con falla'}</span>
+                    </div>
+                  </div>
+
+                  {/* Parámetros Eléctricos U12, U1E, U2E, Z, C, Temp */}
+                  <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-3">
+                    <span className="font-semibold text-sm block">Parámetros Eléctricos del Monitor:</span>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border">
+                        <label className="block text-[11px] font-mono font-bold mb-1">U12 (V)</label>
+                        <input type="text" value={currentData.measurements?.u12 || ''} onChange={(e) => updateMeasurement('u12', e.target.value)} placeholder="230" className="w-full text-sm font-mono font-bold bg-slate-50 dark:bg-slate-800 border rounded-lg px-2.5 py-1.5" />
+                      </div>
+                      <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border">
+                        <label className="block text-[11px] font-mono font-bold mb-1">U1E (V)</label>
+                        <input type="text" value={currentData.measurements?.u1e || ''} onChange={(e) => updateMeasurement('u1e', e.target.value)} placeholder="115" className="w-full text-sm font-mono font-bold bg-slate-50 dark:bg-slate-800 border rounded-lg px-2.5 py-1.5" />
+                      </div>
+                      <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border">
+                        <label className="block text-[11px] font-mono font-bold mb-1">U2E (V)</label>
+                        <input type="text" value={currentData.measurements?.u2e || ''} onChange={(e) => updateMeasurement('u2e', e.target.value)} placeholder="115" className="w-full text-sm font-mono font-bold bg-slate-50 dark:bg-slate-800 border rounded-lg px-2.5 py-1.5" />
+                      </div>
+                      <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border">
+                        <label className="block text-[11px] font-mono font-bold mb-1">Z (kΩ)</label>
+                        <input type="text" value={currentData.measurements?.zKohm || ''} onChange={(e) => updateMeasurement('zKohm', e.target.value)} placeholder="> 500" className="w-full text-sm font-mono font-bold bg-slate-50 dark:bg-slate-800 border rounded-lg px-2.5 py-1.5" />
+                      </div>
+                      <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border">
+                        <label className="block text-[11px] font-mono font-bold mb-1">C (cF)</label>
+                        <input type="text" value={currentData.measurements?.cCapacitance || ''} onChange={(e) => updateMeasurement('cCapacitance', e.target.value)} placeholder="12" className="w-full text-sm font-mono font-bold bg-slate-50 dark:bg-slate-800 border rounded-lg px-2.5 py-1.5" />
+                      </div>
+                      <div className="bg-white dark:bg-slate-900 p-3 rounded-xl border">
+                        <label className="block text-[11px] font-mono font-bold mb-1">Temp (°C / Ok)</label>
+                        <input type="text" value={currentData.measurements?.temp || ''} onChange={(e) => updateMeasurement('temp', e.target.value)} placeholder="OK" className="w-full text-sm font-mono font-bold bg-slate-50 dark:bg-slate-800 border rounded-lg px-2.5 py-1.5" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Selectora y Prueba de Luces */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                      <span className="font-semibold text-sm block mb-1">Posición de Selectora</span>
+                      <select value={currentData.selectorPosition} onChange={(e) => updateCurrent({ selectorPosition: e.target.value })} className="w-full text-sm font-semibold bg-white dark:bg-slate-900 border rounded-xl px-3 py-2 min-h-[44px]">
+                        <option value="Automática">Automática</option>
+                        <option value="Principal">Principal</option>
+                        <option value="Alternativa">Alternativa</option>
+                      </select>
+                    </div>
+                    <div className="p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl flex items-center justify-between">
+                      <div>
+                        <span className="font-semibold text-sm block">Prueba de Luces</span>
+                        <span className="text-xs text-slate-500">Test lámparas (SI / NO)</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button type="button" onClick={() => updateCurrent({ lightsTestOk: true })} className={`px-3 py-2 rounded-xl text-xs font-bold min-h-[44px] min-w-[55px] ${currentData.lightsTestOk === true ? 'bg-emerald-600 text-white' : 'bg-white border'}`}>SÍ</button>
+                        <button type="button" onClick={() => updateCurrent({ lightsTestOk: false })} className={`px-3 py-2 rounded-xl text-xs font-bold min-h-[44px] min-w-[55px] ${currentData.lightsTestOk === false ? 'bg-rose-600 text-white' : 'bg-white border'}`}>NO</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* mA y Observación */}
+                  <div className="space-y-3">
+                    <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 rounded-xl">
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-bold">Monitor Aislación - mA:</label>
+                        <span className="text-[11px] text-blue-700 font-medium">(ANOTAR VALOR mA O MENSAJE DISTINTO A SAFE)</span>
+                      </div>
+                      <input type="text" value={currentData.isolationMonitorMa || ''} onChange={(e) => updateCurrent({ isolationMonitorMa: e.target.value })} placeholder="Ej: 0.15 mA - SAFE" className="w-full text-sm font-mono bg-white dark:bg-slate-900 border rounded-xl px-3 py-2.5 min-h-[44px]" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold mb-1">Observación:</label>
+                      <input type="text" value={currentData.observations || ''} onChange={(e) => updateCurrent({ observations: e.target.value })} placeholder="Observaciones particulares del monitor..." className="w-full text-sm bg-slate-50 dark:bg-slate-800 border rounded-xl px-3 py-2.5 min-h-[44px]" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between pt-4 border-t">
+                <button type="button" onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))} disabled={currentIndex === 0} className="px-4 py-2.5 rounded-xl border text-xs font-semibold disabled:opacity-40 min-h-[44px]">Anterior</button>
+                <button type="button" onClick={handleNext} className="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold min-h-[44px]">
+                  {currentIndex < room.panels.length - 1 ? `Siguiente (TH ${room.panels[currentIndex + 1]})` : 'Paso a Operarios y Envío'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <OperatorSelector selectedOperators={operators} onChange={setOperators} title="Operarios del Control" />
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                <button type="button" onClick={() => setShowOperators(false)} disabled={isSubmitting} className="w-full sm:w-auto px-5 py-3 rounded-xl border font-semibold text-sm min-h-[48px]">Volver a Monitores</button>
+                <button
+                  type="button"
+                  onClick={handleFinalSubmit}
+                  disabled={isSubmitting}
+                  className="w-full sm:w-auto px-7 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold rounded-xl text-sm shadow-md flex items-center justify-center gap-2 min-h-[48px]"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Icon name="loader" className="w-4 h-4" />
+                      <span>ENVIANDO DATOS A LA PLANILLA...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="send" className="w-4 h-4" />
+                      <span>FINALIZAR Y ENVIAR RESPUESTAS</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // APLICACIÓN PRINCIPAL
+    function App() {
+      const [activeTab, setActiveTab] = useState('inspect'); // 'inspect' | 'history'
+      const [selectedRoom, setSelectedRoom] = useState(null);
+      const [preferredMode, setPreferredMode] = useState('checklist');
+      const [inspections, setInspections] = useState(getStoredInspections());
+      const [isDark, setIsDark] = useState(false);
+
+      useEffect(() => {
+        if (isDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }, [isDark]);
+
+      const handleDelete = (id) => {
+        deleteInspectionFromStorage(id);
+        setInspections(getStoredInspections());
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col transition-colors">
+          {/* Header Superior */}
+          <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+              <button onClick={() => { setActiveTab('inspect'); setSelectedRoom(null); }} className="flex items-center gap-2.5 text-left group">
+                <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                  <Icon name="shield" className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="font-bold text-base tracking-tight block leading-tight text-slate-900 dark:text-white">TH Maternidad</span>
+                  <span className="text-[11px] text-slate-500 block leading-none mt-0.5">Edificio B · Electromedicina</span>
+                </div>
+              </button>
+
+              <nav className="flex items-center gap-1 sm:gap-2">
+                <button
+                  onClick={() => { setActiveTab('inspect'); setSelectedRoom(null); }}
+                  className={`px-3 py-2 text-xs sm:text-sm font-medium rounded-lg flex items-center gap-1.5 ${activeTab === 'inspect' ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-semibold' : 'text-slate-600 dark:text-slate-300'}`}
+                >
+                  <Icon name="layers" className="w-4 h-4" />
+                  <span>Salas & TH</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('history')}
+                  className={`px-3 py-2 text-xs sm:text-sm font-medium rounded-lg flex items-center gap-1.5 ${activeTab === 'history' ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-semibold' : 'text-slate-600 dark:text-slate-300'}`}
+                >
+                  <Icon name="history" className="w-4 h-4" />
+                  <span>Historial ({inspections.length})</span>
+                </button>
+              </nav>
+
+              <div className="flex items-center gap-2">
+                <button onClick={() => setIsDark(!isDark)} className="p-2 rounded-lg border text-slate-500 hover:text-slate-900 dark:text-slate-400 min-h-[44px] min-w-[44px] flex items-center justify-center">
+                  <Icon name={isDark ? "sun" : "moon"} className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* Contenido Principal */}
+          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 pb-20">
+            {activeTab === 'inspect' && (
+              <>
+                {!selectedRoom ? (
+                  <div className="space-y-6">
+                    {/* Banner de Inicio */}
+                    <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-md border border-teal-900/40">
+                      <div className="max-w-2xl">
+                        <div className="text-teal-300 text-xs font-semibold tracking-wide uppercase mb-1.5">Edificio "B" Maternidad · Seguridad Eléctrica</div>
+                        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Inspección Operativa de Tableros Hospitalarios</h1>
+                        <p className="mt-2 text-sm text-slate-300 leading-relaxed">
+                          Seleccione la sala o sector a intervenir para realizar controles de aislación, check list reglamentario o atención de emergencia con alarma.
+                        </p>
+                      </div>
+                      <div className="mt-6 pt-5 border-t border-teal-800/50 flex flex-col sm:flex-row items-center justify-between gap-3">
+                        <span className="text-xs text-amber-200">¿Alarma sonora activa en este momento?</span>
+                        <button
+                          onClick={() => {
+                            const utpr = ROOMS.find(r => r.id === 'sala-utpr') || ROOMS[0];
+                            setSelectedRoom(utpr);
+                            setPreferredMode('emergencia');
+                          }}
+                          className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5"
+                        >
+                          <Icon name="alert" className="w-3.5 h-3.5" />
+                          <span>Atención Emergencia Sala UTPR (#17 / #18)</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Grilla de las 5 Salas (Punto F) */}
+                    <div>
+                      <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-4">Salas Quirúrgicas y Cuidados Críticos (Punto F)</h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+                        {ROOMS.map((r) => (
+                          <div key={r.id} className="bg-white dark:bg-slate-900 rounded-2xl border p-5 flex flex-col justify-between hover:shadow-md transition-all">
+                            <div>
+                              <div className="flex items-start justify-between">
+                                <h3 className="text-base font-bold text-slate-900 dark:text-white">{r.name}</h3>
+                                <span className="text-xs font-mono font-bold px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">{r.panels.length} TH</span>
+                              </div>
+                              <p className="text-xs text-slate-500 mt-2">{r.description}</p>
+                              <div className="mt-4 pt-3 border-t">
+                                <span className="text-[11px] font-medium text-slate-500 block mb-1.5">Secuencia de tableros:</span>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {r.panels.map(p => (
+                                    <span key={p} className="text-xs font-mono font-bold px-2 py-0.5 bg-teal-50 dark:bg-teal-950 text-teal-800 dark:text-teal-300 rounded border border-teal-200">TH {p}</span>
+                                  ))}
+                                </div>
+                                <p className="text-[11px] text-slate-400 mt-2 italic">{r.sequenceNote}</p>
+                              </div>
+                            </div>
+                            <div className="mt-5 pt-3 border-t">
+                              <button
+                                onClick={() => { setSelectedRoom(r); setPreferredMode('checklist'); }}
+                                className="w-full px-4 py-2.5 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-1.5 min-h-[44px]"
+                              >
+                                <span>Intervenir Sala</span>
+                                <Icon name="arrow-right" className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Wizard de Inspección (Puntos A, B, C, D) */
+                  <div className="space-y-6">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl border p-5 sm:p-6 shadow-sm">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b">
+                        <div className="flex items-center gap-3">
+                          <button onClick={() => setSelectedRoom(null)} className="p-2 border rounded-xl text-slate-500 min-h-[44px] min-w-[44px] flex items-center justify-center">
+                            <Icon name="arrow-left" className="w-5 h-5" />
+                          </button>
+                          <div>
+                            <span className="text-xs font-mono font-bold text-teal-600 uppercase">Sector en Intervención</span>
+                            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white">{selectedRoom.name}</h1>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs font-mono bg-slate-50 dark:bg-slate-800 p-2 rounded-xl border">
+                          <span>Fecha: {getCurrentDateFormatted()}</span>
+                          <span>·</span>
+                          <span>Hora: {getCurrentTimeFormatted()}</span>
+                        </div>
+                      </div>
+
+                      {/* Selector de Modo (Punto A.4) */}
+                      <div className="mt-4">
+                        <label className="block text-xs font-bold uppercase tracking-wide mb-2">Punto A.4 · Seleccione Procedimiento:</label>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                          <button
+                            type="button"
+                            onClick={() => setPreferredMode('emergencia')}
+                            className={`p-3 rounded-2xl border text-left min-h-[58px] flex items-center gap-3 ${preferredMode === 'emergencia' ? 'bg-rose-50 dark:bg-rose-950/40 border-rose-500 ring-2 ring-rose-400' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200'}`}
+                          >
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${preferredMode === 'emergencia' ? 'bg-rose-600 text-white' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                              <Icon name="alert" className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <span className="text-sm font-bold block">Emergencia / Alarma</span>
+                              <span className="text-[11px] text-slate-500 block">Punto B · TH individual</span>
+                            </div>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setPreferredMode('checklist')}
+                            className={`p-3 rounded-2xl border text-left min-h-[58px] flex items-center gap-3 ${preferredMode === 'checklist' ? 'bg-teal-50 dark:bg-teal-950/40 border-teal-500 ring-2 ring-teal-400' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200'}`}
+                          >
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${preferredMode === 'checklist' ? 'bg-teal-600 text-white' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                              <Icon name="layers" className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <span className="text-sm font-bold block">Check List</span>
+                              <span className="text-[11px] text-slate-500 block">Punto C · Secuencial</span>
+                            </div>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setPreferredMode('control')}
+                            className={`p-3 rounded-2xl border text-left min-h-[58px] flex items-center gap-3 ${preferredMode === 'control' ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-500 ring-2 ring-blue-400' : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200'}`}
+                          >
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${preferredMode === 'control' ? 'bg-blue-600 text-white' : 'bg-slate-200 dark:bg-slate-700'}`}>
+                              <Icon name="gauge" className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <span className="text-sm font-bold block">Control</span>
+                              <span className="text-[11px] text-slate-500 block">Punto D · Panel Monitor</span>
+                            </div>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sub-formulario correspondiente */}
+                    {preferredMode === 'emergencia' && (
+                      <EmergencyForm
+                        room={selectedRoom}
+                        date={getCurrentDateFormatted()}
+                        time={getCurrentTimeFormatted()}
+                        onCancel={() => setSelectedRoom(null)}
+                        onSubmit={() => {
+                          setSelectedRoom(null);
+                          setInspections(getStoredInspections());
+                        }}
+                      />
+                    )}
+
+                    {preferredMode === 'checklist' && (
+                      <ChecklistWizard
+                        room={selectedRoom}
+                        date={getCurrentDateFormatted()}
+                        time={getCurrentTimeFormatted()}
+                        onCancel={() => setSelectedRoom(null)}
+                        onSubmit={() => {
+                          setSelectedRoom(null);
+                          setInspections(getStoredInspections());
+                        }}
+                      />
+                    )}
+
+                    {preferredMode === 'control' && (
+                      <ControlWizard
+                        room={selectedRoom}
+                        date={getCurrentDateFormatted()}
+                        time={getCurrentTimeFormatted()}
+                        onCancel={() => setSelectedRoom(null)}
+                        onSubmit={() => {
+                          setSelectedRoom(null);
+                          setInspections(getStoredInspections());
+                        }}
+                      />
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Pestaña: Historial */}
+            {activeTab === 'history' && (
+              <div className="space-y-4">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border p-4 sm:p-5 flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">Historial de Registros</h2>
+                    <p className="text-xs text-slate-500">Total de controles guardados: {inspections.length}</p>
+                  </div>
+                  <button onClick={() => { setActiveTab('inspect'); setSelectedRoom(null); }} className="px-4 py-2 bg-teal-600 text-white rounded-xl text-xs font-bold">
+                    Nueva Inspección
+                  </button>
+                </div>
+
+                {inspections.length === 0 ? (
+                  <div className="text-center py-12 bg-white dark:bg-slate-900 rounded-2xl border p-6 text-slate-500 text-sm">
+                    No hay registros en el dispositivo. Realice un control para registrar datos.
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {inspections.map((r) => (
+                      <div key={r.id} className="bg-white dark:bg-slate-900 rounded-2xl border p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded uppercase bg-teal-100 text-teal-800">{r.mode}</span>
+                            <span className="text-xs font-mono text-slate-500">{r.date} {r.time}</span>
+                            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">{r.summaryStatus}</span>
+                          </div>
+                          <h3 className="font-bold text-base text-slate-900 dark:text-white">{r.roomName}</h3>
+                          <span className="text-xs text-slate-500">Operarios: {r.operators.join(', ') || 'No asignado'}</span>
+                        </div>
+                        <div className="flex items-center gap-2 self-end sm:self-auto">
+                          <button 
+                            onClick={() => {
+                              const txt = formatInspectionForWhatsApp(r);
+                              if (r.mode === 'emergencia') {
+                                window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_TARGET_NUMBER}&text=${encodeURIComponent(txt)}`, '_blank');
+                              } else {
+                                navigator.clipboard.writeText(txt);
+                                alert('¡Texto del reporte copiado al portapapeles!');
+                              }
+                            }} 
+                            className="px-3 py-2 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold"
+                          >
+                            {r.mode === 'emergencia' ? 'Reenviar WhatsApp' : 'Copiar Reporte'}
+                          </button>
+                          <button onClick={() => { if(confirm('¿Eliminar del historial?')) handleDelete(r.id); }} className="p-2 text-rose-500 hover:bg-rose-50 rounded-xl text-xs">
+                            <Icon name="x" className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </main>
+
+          {/* Pie de Página */}
+          <footer className="border-t bg-white/70 dark:bg-slate-900/70 text-slate-500 text-xs py-4 px-4 text-center mt-auto">
+            <span>Edificio "B" Maternidad · Departamento de Electromedicina y Mantenimiento</span>
+          </footer>
+        </div>
+      );
     }
 
-    window.onload = () => renderizar();
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>

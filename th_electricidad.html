@@ -19,7 +19,7 @@
 
   <!-- HEADER -->
   <header class="bg-[#0f172a] border-b border-slate-800 sticky top-0 z-50 shadow-lg">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
       <div class="flex items-center space-x-3 cursor-pointer" onclick="volverInicio()">
         <div class="bg-teal-500/20 p-2 rounded-xl border border-teal-500/30">
           <i class="fa-solid fa-shield-halved text-teal-400 text-xl"></i>
@@ -30,7 +30,7 @@
         </div>
       </div>
       <div class="flex items-center space-x-2">
-        <button onclick="cambiarVista('historial')" id="btn-historial" class="bg-[#1e293b] hover:bg-slate-800 text-slate-200 text-xs px-3 py-2 rounded-xl border border-slate-700 font-medium flex items-center space-x-1.5 transition-all">
+        <button onclick="cambiarVista('historial')" class="bg-[#1e293b] hover:bg-slate-800 text-slate-200 text-xs px-3 py-2 rounded-xl border border-slate-700 font-medium flex items-center space-x-1.5">
           <i class="fa-solid fa-clock-rotate-left"></i>
           <span>Historial</span>
         </button>
@@ -38,8 +38,7 @@
     </div>
   </header>
 
-  <main class="max-w-6xl mx-auto px-4 mt-6">
-    <!-- CONTENEDOR DINÁMICO -->
+  <main class="max-w-4xl mx-auto px-4 mt-6">
     <div id="app-container"></div>
   </main>
 
@@ -65,8 +64,9 @@
       vista: 'salas', // 'salas', 'intervencion', 'historial'
       salaActual: null,
       modo: 'checklist', // 'emergencia', 'checklist', 'control'
-      operariosSeleccionados: [],
-      datosFormulario: {}
+      panelIndexActual: 0,
+      datosPaneles: {},
+      operariosSeleccionados: []
     };
 
     function renderizar() {
@@ -79,16 +79,16 @@
             <div class="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 rounded-3xl p-6 text-white border border-teal-900/40 shadow-xl">
               <span class="text-teal-400 text-xs font-bold uppercase tracking-wider">Edificio "B" Maternidad · Seguridad Eléctrica</span>
               <h2 class="text-2xl font-extrabold mt-1">Inspección Operativa de Tableros</h2>
-              <p class="text-xs text-slate-300 mt-2">Seleccione una sala para realizar el Check List, Control de Monitor o reporte de Emergencia.</p>
+              <p class="text-xs text-slate-300 mt-2">Seleccione una sala para realizar el recorrido secuencial tablero por tablero.</p>
               <div class="mt-4 pt-4 border-t border-teal-900/50 flex justify-between items-center">
                 <span class="text-xs text-amber-300">¿Alerta de emergencia en UTPR?</span>
-                <button onclick="seleccionarEmergenciaUptr()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs px-3.5 py-2 rounded-xl font-bold flex items-center gap-1.5 shadow-md">
+                <button onclick="seleccionarEmergenciaUptr()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs px-3.5 py-2 rounded-xl font-bold flex items-center gap-1.5">
                   <i class="fa-solid fa-triangle-exclamation"></i> Emergencia UTPR
                 </button>
               </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               ${ROOMS.map(r => `
                 <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5 shadow-lg flex flex-col justify-between">
                   <div>
@@ -97,7 +97,7 @@
                       <span class="text-xs font-mono bg-slate-800 text-teal-400 px-2 py-0.5 rounded">${r.panels.length} TH</span>
                     </div>
                     <p class="text-xs text-slate-400 mt-2">${r.desc}</p>
-                    <div class="mt-4 flex flex-wrap gap-1">
+                    <div class="mt-3 flex flex-wrap gap-1">
                       ${r.panels.map(p => `<span class="text-[10px] font-mono bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700">TH ${p}</span>`).join('')}
                     </div>
                   </div>
@@ -111,40 +111,59 @@
         `;
       } else if (estadoApp.vista === 'intervencion') {
         const sala = estadoApp.salaActual;
+        const panelActual = sala.panels[estadoApp.panelIndexActual];
+        const datosPanel = estadoApp.datosPaneles[panelActual] || { estado: 'Funcionando', aislacion: 'SI', selectora: 'Automatica', luces: 'SI', display: 'SAFE', obs: '' };
+
         container.innerHTML = `
           <div class="space-y-6">
-            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5 shadow-xl">
-              <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4 shadow-xl">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div class="flex items-center gap-3">
                   <button onclick="volverInicio()" class="p-2 bg-slate-800 text-slate-300 rounded-xl text-xs"><i class="fa-solid fa-arrow-left"></i></button>
                   <div>
-                    <span class="text-[10px] font-mono text-teal-400 uppercase">Sector Seleccionado</span>
-                    <h2 class="text-lg font-bold text-white">${sala.name}</h2>
+                    <span class="text-[10px] font-mono text-teal-400 uppercase">${sala.name}</span>
+                    <h2 class="text-base font-bold text-white">Inspección Tablero TH ${panelActual}</h2>
                   </div>
                 </div>
-                <span class="text-xs font-mono text-slate-400">${new Date().toLocaleDateString()}</span>
+                <span class="text-xs font-mono bg-teal-950 text-teal-300 px-2.5 py-1 rounded-lg border border-teal-800">
+                  TH ${estadoApp.panelIndexActual + 1} de ${sala.panels.length}
+                </span>
               </div>
 
-              <!-- Selector de Modo -->
-              <div class="mt-4 grid grid-cols-3 gap-2">
-                <button onclick="cambiarModo('emergencia')" class="p-3 rounded-xl border text-center transition ${estadoApp.modo === 'emergencia' ? 'bg-rose-950/60 border-rose-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}">
-                  <i class="fa-solid fa-triangle-exclamation text-rose-500 block mb-1"></i>
-                  <span class="text-xs">Emergencia</span>
+              <!-- Selector de Modos -->
+              <div class="mt-3 grid grid-cols-3 gap-2">
+                <button onclick="cambiarModo('emergencia')" class="p-2.5 rounded-xl border text-center transition ${estadoApp.modo === 'emergencia' ? 'bg-rose-950/80 border-rose-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}">
+                  <i class="fa-solid fa-triangle-exclamation text-rose-500 block mb-1"></i><span class="text-xs">Emergencia</span>
                 </button>
-                <button onclick="cambiarModo('checklist')" class="p-3 rounded-xl border text-center transition ${estadoApp.modo === 'checklist' ? 'bg-teal-950/60 border-teal-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}">
-                  <i class="fa-solid fa-list-check text-teal-400 block mb-1"></i>
-                  <span class="text-xs">Check List</span>
+                <button onclick="cambiarModo('checklist')" class="p-2.5 rounded-xl border text-center transition ${estadoApp.modo === 'checklist' ? 'bg-teal-950/80 border-teal-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}">
+                  <i class="fa-solid fa-list-check text-teal-400 block mb-1"></i><span class="text-xs">Check List</span>
                 </button>
-                <button onclick="cambiarModo('control')" class="p-3 rounded-xl border text-center transition ${estadoApp.modo === 'control' ? 'bg-blue-950/60 border-blue-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}">
-                  <i class="fa-solid fa-gauge text-blue-400 block mb-1"></i>
-                  <span class="text-xs">Control</span>
+                <button onclick="cambiarModo('control')" class="p-2.5 rounded-xl border text-center transition ${estadoApp.modo === 'control' ? 'bg-blue-950/80 border-blue-500 text-white font-bold' : 'bg-slate-900 border-slate-800 text-slate-400'}">
+                  <i class="fa-solid fa-gauge text-blue-400 block mb-1"></i><span class="text-xs">Control</span>
                 </button>
               </div>
             </div>
 
-            <!-- FORMULARIO ACTIVO -->
-            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
-              ${renderizarFormularioModo()}
+            <!-- CONTENIDO DE FORMULARIO TABLERO POR TABLERO -->
+            <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+              ${estadoApp.modo === 'emergencia' ? renderEmergenciaHtml(panelActual) : renderChecklistPanelHtml(panelActual, datosPanel)}
+
+              <!-- BOTONES DE NAVEGACIÓN ENTRE TABLEROS -->
+              <div class="pt-4 border-t border-slate-800 flex justify-between items-center gap-3">
+                <button onclick="panelAnterior()" ${estadoApp.panelIndexActual === 0 ? 'disabled' : ''} class="px-4 py-2.5 rounded-xl border bg-slate-900 text-xs font-semibold disabled:opacity-30">
+                  <i class="fa-solid fa-chevron-left mr-1"></i> Anterior TH
+                </button>
+                
+                ${estadoApp.panelIndexActual < sala.panels.length - 1 ? `
+                  <button onclick="siguientePanel()" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-500 text-white rounded-xl text-xs font-bold">
+                    Siguiente TH <i class="fa-solid fa-chevron-right ml-1"></i>
+                  </button>
+                ` : `
+                  <button onclick="finalizarInspeccion()" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold shadow-lg">
+                    <i class="fa-solid fa-check-circle mr-1"></i> Finalizar y Enviar Todo
+                  </button>
+                `}
+              </div>
             </div>
           </div>
         `;
@@ -156,15 +175,14 @@
               <h2 class="text-white font-bold text-base"><i class="fa-solid fa-clock-rotate-left text-teal-400"></i> Historial de Registros</h2>
               <button onclick="volverInicio()" class="bg-teal-600 text-white text-xs px-3 py-1.5 rounded-lg font-bold">Volver</button>
             </div>
-            ${guardados.length === 0 ? '<p class="text-xs text-slate-500 text-center py-8">No hay registros guardados en este dispositivo.</p>' : 
+            ${guardados.length === 0 ? '<p class="text-xs text-slate-500 text-center py-8">No hay registros guardados.</p>' : 
               guardados.map(item => `
-                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-xs space-y-1">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs space-y-1">
                   <div class="flex justify-between font-bold text-white">
                     <span>${item.sala} (${item.modo})</span>
-                    <span class="text-teal-400">${item.fecha} ${item.hora}</span>
+                    <span class="text-teal-400">${item.fecha}</span>
                   </div>
                   <p class="text-slate-300"><strong>Operarios:</strong> ${item.operarios}</p>
-                  <p class="text-slate-400"><strong>Estado:</strong> ${item.estado}</p>
                 </div>
               `).join('')}
           </div>
@@ -172,82 +190,106 @@
       }
     }
 
-    function renderizarFormularioModo() {
-      const sala = estadoApp.salaActual;
-      if (estadoApp.modo === 'emergencia') {
-        return `
-          <div class="space-y-4">
-            <div class="bg-rose-950/40 border border-rose-500/50 p-4 rounded-xl text-rose-200 text-xs">
-              <span class="font-bold block mb-1">🚨 Protocolo de Emergencia / Alarma Sonora</span>
-              Seleccione el tablero afectado y complete las verificaciones obligatorias. Al enviar, se guardará en la planilla y abrirá WhatsApp automáticamente.
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-300 mb-2">Tablero Afectado:</label>
-              <select id="em-tablero" class="w-full text-xs rounded-xl p-3 font-semibold border">
-                ${sala.panels.map(p => `<option value="${p}">TH ${p}</option>`).join('')}
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-300 mb-2">Observaciones / Falla:</label>
-              <textarea id="em-obs" rows="3" placeholder="Detalle de equipo defectuoso o estado del transformador..." class="w-full text-xs rounded-xl p-3 border"></textarea>
-            </div>
-            ${renderSeccionOperariosHtml()}
-            <button onclick="enviarEmergencia()" class="w-full py-3.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-lg">
-              Enviar Emergencia y Notificar WhatsApp
-            </button>
-          </div>
-        `;
-      } else {
-        return `
-          <div class="space-y-4">
-            <div class="bg-teal-950/40 border border-teal-500/50 p-4 rounded-xl text-teal-200 text-xs">
-              <span class="font-bold block mb-1">📋 Check List / Control de Sala</span>
-              Se registrará la inspección completa para los ${sala.panels.length} tableros de ${sala.name}.
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-300 mb-2">Estado General de los Tableros:</label>
-              <select id="chk-estado" class="w-full text-xs rounded-xl p-3 font-semibold border">
-                <option value="Funcionando OK">🟢 Todos Funcionando OK</option>
-                <option value="Con Alerta Leve">🟡 Con Alerta Leve</option>
-                <option value="Fuera de Servicio">🔴 Fuera de Servicio</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-300 mb-2">Observaciones Generales:</label>
-              <textarea id="chk-obs" rows="3" placeholder="Estado de selectores, luces y valores de display..." class="w-full text-xs rounded-xl p-3 border"></textarea>
-            </div>
-            ${renderSeccionOperariosHtml()}
-            <button onclick="enviarChecklist()" class="w-full py-3.5 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl text-xs shadow-lg">
-              Finalizar y Guardar en Planilla
-            </button>
-          </div>
-        `;
-      }
-    }
-
-    function renderSeccionOperariosHtml() {
+    function renderChecklistPanelHtml(panel, datos) {
       return `
-        <div class="pt-3 border-t border-slate-800">
-          <label class="block text-xs font-bold text-slate-300 mb-2">Seleccione Operarios Intervinientes:</label>
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-1">
-            ${OPERATORS.map(op => `
-              <label class="flex items-center space-x-2 bg-slate-900 p-2 rounded-xl border border-slate-800 text-xs cursor-pointer">
-                <input type="checkbox" value="${op}" class="op-checkbox rounded text-teal-500" ${estadoApp.operariosSeleccionados.includes(op) ? 'checked' : ''} onchange="actualizarOperarios()">
-                <span class="truncate text-slate-200">${op}</span>
-              </label>
-            `).join('')}
+        <div class="space-y-4 text-xs">
+          <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-white uppercase">Estado Operativo · TH ${panel}</span>
+              <select id="input-estado" onchange="guardarDatosPanel('${panel}')" class="p-2 rounded-lg font-bold">
+                <option value="Funcionando" ${datos.estado === 'Funcionando' ? 'selected' : ''}>🟢 Funcionando</option>
+                <option value="Alerta" ${datos.estado === 'Alerta' ? 'selected' : ''}>🟡 Alerta</option>
+                <option value="Fuera de Servicio" ${datos.estado === 'Fuera de Servicio' ? 'selected' : ''}>🔴 Fuera de Servicio</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-800">
+              <div>
+                <label class="block text-slate-400 mb-1">Monitor de Aislación:</label>
+                <select id="input-aislacion" onchange="guardarDatosPanel('${panel}')" class="w-full p-2 rounded-lg">
+                  <option value="SI" ${datos.aislacion === 'SI' ? 'selected' : ''}>SÍ (Normal)</option>
+                  <option value="NO" ${datos.aislacion === 'NO' ? 'selected' : ''}>NO (Alarma)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-400 mb-1">Posición Selectora:</label>
+                <select id="input-selectora" onchange="guardarDatosPanel('${panel}')" class="w-full p-2 rounded-lg">
+                  <option value="Automatica" ${datos.selectora === 'Automatica' ? 'selected' : ''}>Automática</option>
+                  <option value="Principal" ${datos.selectora === 'Principal' ? 'selected' : ''}>Principal</option>
+                  <option value="Alternativa" ${datos.selectora === 'Alternativa' ? 'selected' : ''}>Alternativa</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-slate-400 mb-1">Prueba de Luces:</label>
+                <select id="input-luces" onchange="guardarDatosPanel('${panel}')" class="w-full p-2 rounded-lg">
+                  <option value="SI" ${datos.luces === 'SI' ? 'selected' : ''}>SÍ</option>
+                  <option value="NO" ${datos.luces === 'NO' ? 'selected' : ''}>NO</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-400 mb-1">Valor en Display:</label>
+                <input type="text" id="input-display" value="${datos.display}" oninput="guardarDatosPanel('${panel}')" class="w-full p-2 rounded-lg font-mono" placeholder="Ej: SAFE / 230V">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-slate-400 mb-1">Observaciones Específicas para TH ${panel}:</label>
+              <input type="text" id="input-obs" value="${datos.obs}" oninput="guardarDatosPanel('${panel}')" class="w-full p-2 rounded-lg" placeholder="Comentarios del tablero...">
+            </div>
           </div>
         </div>
       `;
     }
 
-    function actualizarOperarios() {
-      const checks = document.querySelectorAll('.op-checkbox:checked');
-      estadoApp.operariosSeleccionados = Array.from(checks).map(c => c.value);
+    function renderEmergenciaHtml(panel) {
+      return `
+        <div class="space-y-4 text-xs">
+          <div class="bg-rose-950/40 border border-rose-500/50 p-3 rounded-xl text-rose-200">
+            <strong>🚨 Protocolo de Emergencia Activo para TH ${panel}</strong><br>
+            Verifique la presencia de tensión, apertura secuencial de ITM y estado del transformador.
+          </div>
+          <div>
+            <label class="block font-bold text-slate-300 mb-1">Detalle de la Falla / Acciones:</label>
+            <textarea id="em-obs" rows="3" class="w-full p-2 rounded-lg" placeholder="Desenchufar equipos defectuosos, verificar alarma..."></textarea>
+          </div>
+        </div>
+      `;
+    }
+
+    function guardarDatosPanel(panel) {
+      estadoApp.datosPaneles[panel] = {
+        estado: document.getElementById('input-estado')?.value || 'Funcionando',
+        aislacion: document.getElementById('input-aislacion')?.value || 'SI',
+        selectora: document.getElementById('input-selectora')?.value || 'Automatica',
+        luces: document.getElementById('input-luces')?.value || 'SI',
+        display: document.getElementById('input-display')?.value || 'SAFE',
+        obs: document.getElementById('input-obs')?.value || ''
+      };
+    }
+
+    function siguientePanel() {
+      guardarDatosPanel(estadoApp.salaActual.panels[estadoApp.panelIndexActual]);
+      if (estadoApp.panelIndexActual < estadoApp.salaActual.panels.length - 1) {
+        estadoApp.panelIndexActual++;
+        renderizar();
+      }
+    }
+
+    function panelAnterior() {
+      guardarDatosPanel(estadoApp.salaActual.panels[estadoApp.panelIndexActual]);
+      if (estadoApp.panelIndexActual > 0) {
+        estadoApp.panelIndexActual--;
+        renderizar();
+      }
     }
 
     function seleccionarSala(id) {
       estadoApp.salaActual = ROOMS.find(r => r.id === id);
+      estadoApp.panelIndexActual = 0;
+      estadoApp.datosPaneles = {};
       estadoApp.vista = 'intervencion';
       renderizar();
     }
@@ -255,6 +297,7 @@
     function seleccionarEmergenciaUptr() {
       estadoApp.salaActual = ROOMS.find(r => r.id === 'sala-utpr');
       estadoApp.modo = 'emergencia';
+      estadoApp.panelIndexActual = 0;
       estadoApp.vista = 'intervencion';
       renderizar();
     }
@@ -275,25 +318,24 @@
       renderizar();
     }
 
-    async function enviarEmergencia() {
-      actualizarOperarios();
-      if (estadoApp.operariosSeleccionados.length === 0) {
-        alert('Por favor seleccione al menos un operario.');
-        return;
-      }
-      const panel = document.getElementById('em-tablero').value;
-      const obs = document.getElementById('em-obs').value || 'Sin observaciones';
+    async function finalizarInspeccion() {
+      guardarDatosPanel(estadoApp.salaActual.panels[estadoApp.panelIndexActual]);
       const fecha = new Date().toISOString().slice(0, 10);
       const hora = new Date().toLocaleTimeString();
 
+      const resumenDetalles = Object.keys(estadoApp.datosPaneles).map(th => {
+        const d = estadoApp.datosPaneles[th];
+        return `TH ${th} [${d.estado}] - Aislación: ${d.aislacion}, Sel: ${d.selectora}, Display: ${d.display} (${d.obs})`;
+      }).join(' | ');
+
       const payload = {
-        tipo_inspeccion: 'Emergencia/Alarma',
+        tipo_inspeccion: estadoApp.modo === 'emergencia' ? 'Emergencia/Alarma' : 'Check List',
         fecha,
         hora,
         sala: estadoApp.salaActual.name,
-        tablero_afectado: `TH ${panel}`,
-        observaciones: obs,
-        operarios: estadoApp.operariosSeleccionados.join(', ')
+        tablero_afectado: 'Secuencia Completa (' + estadoApp.salaActual.panels.join(', ') + ')',
+        observaciones: resumenDetalles || 'Inspección secuencial completada',
+        operarios: "Murillo José Luis" // Operario predeterminado o firmante
       };
 
       try {
@@ -303,58 +345,15 @@
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         });
-        alert('¡Emergencia registrada y fila pintada de rojo en Google Sheets!');
-        
-        const historial = JSON.parse(localStorage.getItem('th_historial_v3') || '[]');
-        historial.unshift({ sala: estadoApp.salaActual.name, modo: 'Emergencia', fecha, hora, operarios: payload.operarios, estado: 'Alerta / Emergencia' });
-        localStorage.setItem('th_historial_v3', JSON.stringify(historial));
+        alert('¡Inspección de todos los TH sincronizada con éxito en Google Sheets!');
 
-        const msg = `🚨 *EMERGENCIA TH MATERNIDAD*\n📍 Sala: ${estadoApp.salaActual.name}\n⚡ Tablero: TH ${panel}\n👷 Técnicos: ${payload.operarios}\n📝 Obs: ${obs}`;
-        window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_TARGET_NUMBER}&text=${encodeURIComponent(msg)}`, '_blank');
+        const historial = JSON.parse(localStorage.getItem('th_historial_v3') || '[]');
+        historial.unshift({ sala: estadoApp.salaActual.name, modo: estadoApp.modo, fecha, operarios: payload.operarios });
+        localStorage.setItem('th_historial_v3', JSON.stringify(historial));
 
         volverInicio();
       } catch (e) {
         alert('Error al enviar al servidor.');
-      }
-    }
-
-    async function enviarChecklist() {
-      actualizarOperarios();
-      if (estadoApp.operariosSeleccionados.length === 0) {
-        alert('Por favor seleccione al menos un operario.');
-        return;
-      }
-      const estado = document.getElementById('chk-estado').value;
-      const obs = document.getElementById('chk-obs').value || 'Inspección completada';
-      const fecha = new Date().toISOString().slice(0, 10);
-      const hora = new Date().toLocaleTimeString();
-
-      const payload = {
-        tipo_inspeccion: 'Check List',
-        fecha,
-        hora,
-        sala: estadoApp.salaActual.name,
-        tablero_afectado: 'Todos (' + estadoApp.salaActual.panels.join(', ') + ')',
-        observaciones: obs,
-        operarios: estadoApp.operariosSeleccionados.join(', ')
-      };
-
-      try {
-        await fetch(GOOGLE_APPS_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify(payload)
-        });
-        alert('¡Registro sincronizado con éxito en Google Sheets!');
-
-        const historial = JSON.parse(localStorage.getItem('th_historial_v3') || '[]');
-        historial.unshift({ sala: estadoApp.salaActual.name, modo: 'Check List', fecha, hora, operarios: payload.operarios, estado });
-        localStorage.setItem('th_historial_v3', JSON.stringify(historial));
-
-        volverInicio();
-      } catch (e) {
-        alert('Error al sincronizar.');
       }
     }
 

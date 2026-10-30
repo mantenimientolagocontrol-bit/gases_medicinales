@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subestación de Transferencia Eléctrica - AEA 90364-7-710</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-16">
+
+  <!-- HEADER -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 shadow-xl backdrop-blur-md bg-slate-900/90">
+    <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 font-black text-lg">
+          ⚡
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-extrabold text-white tracking-tight flex items-center gap-2">
+            SUBESTACIÓN DE TRANSFERENCIA ELÉCTRICA
+            <span class="text-[10px] bg-amber-400/15 border border-amber-400/30 text-amber-300 font-mono font-bold px-2 py-0.5 rounded">
+              AEA 90364-7-710
+            </span>
+          </h1>
+          <p class="text-xs text-slate-400">
+            Registro, supervisión y auditoría normativa para instalaciones críticas y salas médicas
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 text-xs">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/70 border border-emerald-600/50 text-emerald-300 font-mono text-[11px]">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          SCADA/HMI Operativo
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 mt-6 space-y-6">
+
+    <!-- DIAGRAMA UNIFILAR INTERACTIVO -->
+    <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <div>
+          <h2 class="text-sm sm:text-base font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
+            <span>Esquema Unifilar SCADA en Tiempo Real</span>
+          </h2>
+          <p class="text-xs text-slate-400">
+            TR1 (1250 kVA) · GE1 (1505 kVA) · Barra 1 | Enlace Q9 (2500 A) | Barra 2 · TR2 (1250 kVA) · GE2 (1505 kVA)
+          </p>
+        </div>
+        <div class="flex items-center gap-2 text-xs">
+          <label class="flex items-center gap-2 px-3 py-1.5 bg-slate-950 rounded-lg border border-slate-800 cursor-pointer">
+            <input type="checkbox" id="checkQ9" class="accent-amber-400 w-4 h-4 cursor-pointer" onchange="actualizarDiagramaYCalculos()">
+            <span class="font-bold text-slate-200">Acoplamiento Q9 (2500 A)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- SVG DINÁMICO -->
+      <div class="w-full bg-slate-950/90 rounded-xl p-3 border border-slate-800 overflow-x-auto">
+        <svg viewBox="0 0 950 380" class="w-full min-w-[750px] h-auto">
+          <defs>
+            <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e293b" stroke-width="0.5" />
+            </pattern>
+          </defs>
+          <rect width="950" height="380" fill="url(#grid)" />
+
+          <!-- LADO IZQUIERDO -->
+          <g id="grpTR1" transform="translate(130, 45)">
+            <circle cx="0" cy="0" r="22" fill="#0f172a" stroke="#0284c7" stroke-width="3" id="tr1_c1" />
+            <circle cx="0" cy="24" r="22" fill="#0f172a" stroke="#0284c7" stroke-width="3" id="tr1_c2" />
+            <text x="35" y="14" fill="#38bdf8" font-size="12" font-weight="bold" font-family="JetBrains Mono">TR1 (1250 kVA)</text>
+            <text x="35" y="28" fill="#94a3b8" font-size="10">33 / 0.4 kV</text>
+          </g>
+
+          <g id="grpGE1" transform="translate(300, 55)">
+            <circle cx="0" cy="0" r="25" fill="#0f172a" stroke="#f59e0b" stroke-width="3" id="ge1_c" />
+            <text x="0" y="5" fill="#fbbf24" font-size="14" font-weight="bold" text-anchor="middle" font-family="JetBrains Mono">G</text>
+            <text x="35" y="3" fill="#fbbf24" font-size="12" font-weight="bold" font-family="JetBrains Mono">GE1 (1505 kVA)</text>
+            <text x="35" y="17" fill="#94a3b8" font-size="10">Generador Diésel</text>
+          </g>
+
+          <line x1="130" y1="95" x2="130" y2="140" stroke="#64748b" stroke-width="4" id="lineTR1" />
+          <line x1="300" y1="85" x2="300" y2="140" stroke="#64748b" stroke-width="4" id="lineGE1" />
+
+          <!-- Q2 (TR1) 1600 A -->
+          <g id="swQ2" transform="translate(130, 160)" class="cursor-pointer" onclick="toggleBreakerManual('T1')">
+            <rect x="-24" y="-18" width="48" height="36" rx="6" fill="#0f172a" stroke="#22c55e" stroke-width="2" id="boxQ2" />
+            <line x1="-12" y1="0" x2="12" y2="0" stroke="#22c55e" stroke-width="4" id="lineQ2" />
+            <text x="32" y="-2" fill="#e2e8f0" font-size="11" font-weight="bold" font-family="JetBrains Mono">Q2 (1600 A)</text>
+            <text x="32" y="11" fill="#22c55e" font-size="10" font-weight="bold" id="lblQ2">ABIERTO</text>
+          </g>
+
+          <!-- Q1 (GE1) 1600 A -->
+          <g id="swQ1" transform="translate(300, 160)" class="cursor-pointer" onclick="toggleBreakerManual('G1')">
+            <rect x="-24" y="-18" width="48" height="36" rx="6" fill="#0f172a" stroke="#22c55e" stroke-width="2" id="boxQ1" />
+            <line x1="-12" y1="0" x2="12" y2="0" stroke="#22c55e" stroke-width="4" id="lineQ1" />
+            <text x="32" y="-2" fill="#e2e8f0" font-size="11" font-weight="bold" font-family="JetBrains Mono">Q1 (1600 A)</text>
+            <text x="32" y="11" fill="#22c55e" font-size="10" font-weight="bold" id="lblQ1">ABIERTO</text>
+          </g>
+
+          <line x1="130" y1="180" x2="130" y2="230" stroke="#64748b" stroke-width="4" id="lineQ2_out" />
+          <line x1="300" y1="180" x2="300" y2="230" stroke="#64748b" stroke-width="4" id="lineQ1_out" />
+
+          <!-- BARRA 1 -->
+          <line x1="80" y1="230" x2="400" y2="230" stroke="#64748b" stroke-width="8" stroke-linecap="round" id="bus1" />
+          <text x="90" y="255" fill="#f8fafc" font-size="13" font-weight="extrabold" font-family="JetBrains Mono">BARRA BUS 1 (TGBT-1)</text>
+
+          <!-- ENLACE CENTRAL Q9 -->
+          <line x1="400" y1="230" x2="440" y2="230" stroke="#64748b" stroke-width="6" id="lineEnlaceIzq" />
+
+          <g id="swQ9" transform="translate(475, 230)" class="cursor-pointer" onclick="toggleQ9Manual()">
+            <rect x="-26" y="-22" width="52" height="44" rx="8" fill="#0f172a" stroke="#22c55e" stroke-width="2.5" id="boxQ9" />
+            <line x1="-14" y1="0" x2="14" y2="0" stroke="#22c55e" stroke-width="4.5" id="lineQ9" />
+            <text x="0" y="-28" fill="#f59e0b" font-size="11" font-weight="bold" text-anchor="middle" font-family="JetBrains Mono">Q9 (2500 A)</text>
+            <text x="0" y="34" fill="#22c55e" font-size="10" font-weight="bold" text-anchor="middle" id="lblQ9">ABIERTO</text>
+          </g>
+
+          <line x1="510" y1="230" x2="550" y2="230" stroke="#64748b" stroke-width="6" id="lineEnlaceDer" />
+
+          <!-- BARRA 2 -->
+          <line x1="550" y1="230" x2="870" y2="230" stroke="#64748b" stroke-width="8" stroke-linecap="round" id="bus2" />
+          <text x="730" y="255" fill="#f8fafc" font-size="13" font-weight="extrabold" font-family="JetBrains Mono">BARRA BUS 2 (TGBT-2)</text>
+
+          <line x1="650" y1="180" x2="650" y2="230" stroke="#64748b" stroke-width="4" id="lineQ3_out" />
+          <line x1="820" y1="180" x2="820" y2="230" stroke="#64748b" stroke-width="4" id="lineQ4_out" />
+
+          <!-- Q3 (GE2) 1600 A -->
+          <g id="swQ3" transform="translate(650, 160)" class="cursor-pointer" onclick="toggleBreaker2Manual('G2')">
+            <rect x="-24" y="-18" width="48" height="36" rx="6" fill="#0f172a" stroke="#22c55e" stroke-width="2" id="boxQ3" />
+            <line x1="-12" y1="0" x2="12" y2="0" stroke="#22c55e" stroke-width="4" id="lineQ3" />
+            <text x="32" y="-2" fill="#e2e8f0" font-size="11" font-weight="bold" font-family="JetBrains Mono">Q3 (1600 A)</text>
+            <text x="32" y="11" fill="#22c55e" font-size="10" font-weight="bold" id="lblQ3">ABIERTO</text>
+          </g>
+
+          <!-- Q4 (TR2) 1600 A -->
+          <g id="swQ4" transform="translate(820, 160)" class="cursor-pointer" onclick="toggleBreaker2Manual('T2')">
+            <rect x="-24" y="-18" width="48" height="36" rx="6" fill="#0f172a" stroke="#22c55e" stroke-width="2" id="boxQ4" />
+            <line x1="-12" y1="0" x2="12" y2="0" stroke="#22c55e" stroke-width="4" id="lineQ4" />
+            <text x="32" y="-2" fill="#e2e8f0" font-size="11" font-weight="bold" font-family="JetBrains Mono">Q4 (1600 A)</text>
+            <text x="32" y="11" fill="#22c55e" font-size="10" font-weight="bold" id="lblQ4">ABIERTO</text>
+          </g>
+
+          <line x1="650" y1="85" x2="650" y2="140" stroke="#64748b" stroke-width="4" id="lineGE2" />
+          <line x1="820" y1="95" x2="820" y2="140" stroke="#64748b" stroke-width="4" id="lineTR2" />
+
+          <g id="grpGE2" transform="translate(650, 55)">
+            <circle cx="0" cy="0" r="25" fill="#0f172a" stroke="#f59e0b" stroke-width="3" id="ge2_c" />
+            <text x="0" y="5" fill="#fbbf24" font-size="14" font-weight="bold" text-anchor="middle" font-family="JetBrains Mono">G</text>
+            <text x="35" y="3" fill="#fbbf24" font-size="12" font-weight="bold" font-family="JetBrains Mono">GE2 (1505 kVA)</text>
+            <text x="35" y="17" fill="#94a3b8" font-size="10">Generador Diésel</text>
+          </g>
+
+          <g id="grpTR2" transform="translate(820, 45)">
+            <circle cx="0" cy="0" r="22" fill="#0f172a" stroke="#0284c7" stroke-width="3" id="tr2_c1" />
+            <circle cx="0" cy="24" r="22" fill="#0f172a" stroke="#0284c7" stroke-width="3" id="tr2_c2" />
+            <text x="-135" y="14" fill="#38bdf8" font-size="12" font-weight="bold" font-family="JetBrains Mono">TR2 (1250 kVA)</text>
+            <text x="-95" y="28" fill="#94a3b8" font-size="10">33 / 0.4 kV</text>
+          </g>
+
+          <g transform="translate(200, 230)">
+            <line x1="0" y1="0" x2="0" y2="50" stroke="#64748b" stroke-width="3" id="lineCarga1" />
+            <polygon points="-6,50 6,50 0,60" fill="#64748b" id="arrowCarga1" />
+            <text x="0" y="75" fill="#94a3b8" font-size="10" text-anchor="middle">Cargas Barra 1</text>
+          </g>
+
+          <g transform="translate(750, 230)">
+            <line x1="0" y1="0" x2="0" y2="50" stroke="#64748b" stroke-width="3" id="lineCarga2" />
+            <polygon points="-6,50 6,50 0,60" fill="#64748b" id="arrowCarga2" />
+            <text x="0" y="75" fill="#94a3b8" font-size="10" text-anchor="middle">Cargas Barra 2</text>
+          </g>
+        </svg>
+      </div>
+    </section>
+
+    <!-- FORMULARIO DE ENTRADA -->
+    <form id="substationForm" onsubmit="event.preventDefault(); finalizarYEnviar();">
+
+      <!-- 1. ALIMENTACIÓN -->
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span class="w-6 h-6 rounded bg-sky-500/20 text-sky-400 flex items-center justify-center text-xs">1</span>
+              ALIMENTACIÓN (Matriz de selección Sí / No)
+            </h3>
+            <p class="text-xs text-slate-400">Marque el estado de disponibilidad real de las 6 fuentes de suministro.</p>
+          </div>
+          <div class="flex gap-2">
+            <button type="button" onclick="setAllSources(true)" class="text-[11px] text-sky-400 hover:underline">Todas SÍ</button>
+            <span class="text-slate-600">·</span>
+            <button type="button" onclick="setAllSources(false)" class="text-[11px] text-slate-400 hover:underline">Todas NO</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <div class="font-bold text-sm text-white">Red Normal</div>
+              <div class="text-[10px] text-slate-400 font-mono">Media Tensión Distribuidora</div>
+            </div>
+            <div class="flex bg-slate-900 rounded-lg p-0.5 border border-slate-800 text-xs font-bold font-mono">
+              <label class="px-2.5 py-1 rounded cursor-pointer has-[:checked]:bg-sky-600 has-[:checked]:text-white text-slate-400">
+                <input type="radio" name="src_redNormal" value="SI" class="hidden" checked onchange="actualizarDiagramaYCalculos()"> SÍ
+              </label>
+              <label class="px-2.5 py-1 rounded cursor-pointer has-[:checked]:bg-slate-700 has-[:checked]:text-white text-slate-400">
+                <input type="radio" name="src_redNormal" value="NO" class="hidden" onchange="actualizarDiagramaYCalculos()"> NO
+              </label>
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <div class="font-bold text-sm text-white">Transformador 1</div>
+              <div class="text-[10px] text-slate-400 font-mono">TR1 · 1250 kVA</div>
+            </div>
+            <div class="flex bg-slate-900 rounded-lg p-0.5 border border-slate-800 text-xs font-bold font-mono">
+              <label class="px-2.5 py-1 rounded cursor-pointer has-[:checked]:bg-sky-600 has-[:checked]:text-white text-slate-400">
+                <input type="radio" name="src_tr1" value="SI" class="hidden" checked onchange="actualizarDiagramaYCalculos()"> SÍ
+              </label>
+              <label class="px-2.5 py-1 rounded cursor-pointer has-[:checked]:bg-slate-700 has-[:checked]:text-white text-slate-400">
+                <input type="radio" name="src_tr1" value="NO" class="hidden" onchange="actualizarDiagramaYCalculos()"> NO
+              </label>
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <div class="font-bold text-sm text-white">Transformador 2</div>
+              <div class="text-[10px] text-slate-400 font-mono">TR2 · 1250 kVA</div>
+            </div>
+            <div class="flex bg-slate-900 rounded-lg p-0.5 border border-slate-800 text-xs font-bold font-mono">
+              <label class="px-2.5 py-1 rounded cursor-pointer has-[:checked]:bg-sky-600 has-[:checked]:text-white text-slate-400">
+                <input type="radio" name="src_tr2" value="SI" class="hidden" checked onchange="actualizarDiagramaYCalculos()"> SÍ
+              </label>
+              <label class="px-2.5 py-1 rounded cursor-pointer has-[:checked]:bg-slate-700 has-[:checked]:text-white text-slate-400">
+                <input type="radio" name="src_tr2" value="NO" class="hidden" onchange="actualizarDiagramaYCalculos()"> NO
+              </label>
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <div class="font-bold text-sm text-white">Red de Emergencia</div>
+              <div class="text-[10px] text-slate-400 font-mono">Barra Esencial AEA 710</div>
+            </div>
+            <div class="flex bg-slate-900 rounded-lg p-0.5 border border-slate-800 text-xs font-bold font-mono">
+              <label class="px-2.5 py-1 rounded cursor-pointer has-[:checked]:bg-amber-600 has-[:checked]:text-white text-slate-400">
+                <input type="radio" name="src_redEmergencia" value="SI" class="hidden" checked onchange="actualizarDiagramaYCalculos()"> SÍ
+              </label>
+              <label class="px-2.5 py-1 rounded cursor-pointer has-[:checked]:bg-slate-700 has-[:checked]:text-white text-slate-400">
+                <input type="radio" name="src_redEmergencia" value="NO" class="hidden" onchange="actualizarDiagramaYCalculos()"> NO
+              </label>
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <div class="font-bold text-sm text-white">Generador 1</div>
+              <div class="text-[10px] text-slate-400 font-mono">GE1 · 1505 kVA</div>
+            </div>
+            <div class="flex bg-slate-900 rounded-lg p-0.5 border border-slate-800 text-xs font-bold font-mono">
+              <label class="px-2.5 py-1 rounded cursor-pointer has-[:checked]:bg-amber-600 has-[:checked]:text-white text-slate-400">
+                <input type="radio" name="src_ge1" value="SI" class="hidden" onchange="actualizarDiagramaYCalculos()"> SÍ
+              </label>
+              <label class="px-2.5 py-1 rounded cursor-pointer has-[:checked]:bg-slate-700 has-[:checked]:text-white text-slate-400">
+                <input type="radio" name="src_ge1" value="NO" class="hidden" checked onchange="actualizarDiagramaYCalculos()"> NO
+              </label>
+            </div>
+          </div>
+
+          <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center justify-between">
+            <div>
+              <div class="font-bold text-sm text-white">Generador 2</div>
+              <div class="text-[10px] text-slate-400 font-mono">GE2 · 1505 kVA</div>
+            </div>
+            <div class="flex bg-slate-900 rounded-lg p-0.5 border border-slate-800 text-xs font-bold font-mono">
+              <label class="px-2.5 py-1 rounded cursor-pointer has-[:checked]:bg-amber-600 has-[:checked]:text-white text-slate-400">
+                <input type="radio" name="src_ge2" value="SI" class="hidden" onchange="actualizarDiagramaYCalculos()"> SÍ
+              </label>
+              <label class="px-2.5 py-1 rounded cursor-pointer has-[:checked]:bg-slate-700 has-[:checked]:text-white text-slate-400">
+                <input type="radio" name="src_ge2" value="NO" class="hidden" checked onchange="actualizarDiagramaYCalculos()"> NO
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 & 3. INTERRUPTOR 1 -->
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl mt-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 border-b border-slate-800 gap-3">
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span class="w-6 h-6 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">2-3</span>
+              INTERRUPTOR 1 (TR1 / GE1 / Ninguno)
+            </h3>
+            <p class="text-xs text-slate-400">Posición de maniobra y relevamiento de parámetros eléctricos para Barra 1.</p>
+          </div>
+          
+          <div class="w-full sm:w-auto flex items-center gap-2">
+            <span class="text-xs text-slate-400 font-semibold">Fuente:</span>
+            <select id="selInt1" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-300 focus:outline-none focus:ring-1 focus:ring-amber-400 cursor-pointer" onchange="actualizarDiagramaYCalculos()">
+              <option value="T1" selected>T1 (TR1 - 1250 kVA · Q2 Cerrado)</option>
+              <option value="G1">G1 (GE1 - 1505 kVA · Q1 Cerrado)</option>
+              <option value="Ninguno">Ninguno (Abierto)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="p-3 bg-amber-950/20 rounded-xl border border-amber-900/40 my-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <label class="text-xs font-bold text-slate-200 flex items-center gap-2">
+            <span>📅 Fecha y Hora de Lectura · INTERRUPTOR 1:</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <input type="datetime-local" id="fechaHoraInt1" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:ring-1 focus:ring-amber-400" />
+            <button type="button" onclick="cargarHoraActual('fechaHoraInt1')" class="px-2.5 py-1.5 bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 rounded-lg text-xs font-mono font-semibold transition-colors cursor-pointer">
+              Hora Actual
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 space-y-2">
+            <div class="text-xs font-bold uppercase font-mono text-amber-400 pb-1 border-b border-slate-800">Corrientes [A]</div>
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+              <div><label class="text-[10px] text-slate-400">L1 [A]:</label><input type="number" step="0.1" id="int1_l1" value="920" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[10px] text-slate-400">L2 [A]:</label><input type="number" step="0.1" id="int1_l2" value="905" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[10px] text-slate-400">L3 [A]:</label><input type="number" step="0.1" id="int1_l3" value="890" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div class="bg-amber-950/30 rounded p-0.5 border border-amber-900/40"><label class="text-[10px] text-amber-300 font-bold">Ne [A]:</label><input type="number" step="0.1" id="int1_ne" value="45" class="w-full bg-slate-900 border border-amber-500/50 rounded p-1 text-right text-amber-200 font-bold" oninput="actualizarDiagramaYCalculos()"></div>
+            </div>
+          </div>
+
+          <div class="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 space-y-2">
+            <div class="text-xs font-bold uppercase font-mono text-sky-400 pb-1 border-b border-slate-800">Tensiones [V] (LL y LN)</div>
+            <div class="grid grid-cols-3 gap-2 text-xs font-mono">
+              <div><label class="text-[10px] text-slate-400">U12:</label><input type="number" step="0.1" id="int1_u12" value="401" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[10px] text-slate-400">U23:</label><input type="number" step="0.1" id="int1_u23" value="399" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[10px] text-slate-400">U31:</label><input type="number" step="0.1" id="int1_u31" value="400" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 text-xs font-mono pt-1">
+              <div><label class="text-[10px] text-slate-400">U1:</label><input type="number" step="0.1" id="int1_u1" value="231" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[10px] text-slate-400">U2:</label><input type="number" step="0.1" id="int1_u2" value="230" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[10px] text-slate-400">U3:</label><input type="number" step="0.1" id="int1_u3" value="231" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div class="bg-sky-950/30 rounded p-0.5 border border-sky-800/40"><label class="text-[10px] text-sky-300 font-bold">U0:</label><input type="number" step="0.1" id="int1_u0" value="1.2" class="w-full bg-slate-900 border border-sky-600 rounded p-1 text-right text-sky-200 font-bold" oninput="actualizarDiagramaYCalculos()"></div>
+            </div>
+          </div>
+
+          <div class="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between pb-1 border-b border-slate-800">
+              <span class="text-xs font-bold uppercase font-mono text-emerald-400">Potencias Int 1</span>
+              <button type="button" onclick="calcularTotalesInt1()" class="text-[10px] text-emerald-400 hover:underline cursor-pointer">Auto Sumar</button>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 text-xs font-mono">
+              <div><label class="text-[9px] text-slate-400">P1 [kW]</label><input type="number" id="int1_p1" value="205" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-slate-400">P2 [kW]</label><input type="number" id="int1_p2" value="200" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-slate-400">P3 [kW]</label><input type="number" id="int1_p3" value="198" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-amber-400 font-bold">P_tot</label><input type="number" id="int1_pTotal" value="603" class="w-full bg-slate-900 border border-amber-500/50 rounded p-1 text-right text-amber-300 font-bold" oninput="actualizarDiagramaYCalculos()"></div>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 text-xs font-mono">
+              <div><label class="text-[9px] text-slate-400">Q1 [kvar]</label><input type="number" id="int1_q1" value="65" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-slate-400">Q2 [kvar]</label><input type="number" id="int1_q2" value="62" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-slate-400">Q3 [kvar]</label><input type="number" id="int1_q3" value="60" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-indigo-400 font-bold">Q_tot</label><input type="number" id="int1_qTotal" value="187" class="w-full bg-slate-900 border border-indigo-500/50 rounded p-1 text-right text-indigo-300 font-bold" oninput="actualizarDiagramaYCalculos()"></div>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 text-xs font-mono">
+              <div><label class="text-[9px] text-slate-400">S1 [kVA]</label><input type="number" id="int1_s1" value="215" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-slate-400">S2 [kVA]</label><input type="number" id="int1_s2" value="209" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-slate-400">S3 [kVA]</label><input type="number" id="int1_s3" value="207" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-emerald-400 font-bold">S_tot</label><input type="number" id="int1_sTotal" value="631" class="w-full bg-slate-900 border border-emerald-500/50 rounded p-1 text-right text-emerald-300 font-bold" oninput="actualizarDiagramaYCalculos()"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4 & 5. INTERRUPTOR 2 -->
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl mt-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 border-b border-slate-800 gap-3">
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span class="w-6 h-6 rounded bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">4-5</span>
+              INTERRUPTOR 2 (TR2 / GE2 / Ninguno)
+            </h3>
+            <p class="text-xs text-slate-400">Posición de maniobra y relevamiento de parámetros eléctricos para Barra 2.</p>
+          </div>
+          
+          <div class="w-full sm:w-auto flex items-center gap-2">
+            <span class="text-xs text-slate-400 font-semibold">Fuente:</span>
+            <select id="selInt2" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-amber-300 focus:outline-none focus:ring-1 focus:ring-amber-400 cursor-pointer" onchange="actualizarDiagramaYCalculos()">
+              <option value="T2" selected>T2 (TR2 - 1250 kVA · Q4 Cerrado)</option>
+              <option value="G2">G2 (GE2 - 1505 kVA · Q3 Cerrado)</option>
+              <option value="Ninguno">Ninguno (Abierto)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="p-3 bg-amber-950/20 rounded-xl border border-amber-900/40 my-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <label class="text-xs font-bold text-slate-200 flex items-center gap-2">
+            <span>📅 Fecha y Hora de Lectura · INTERRUPTOR 2:</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <input type="datetime-local" id="fechaHoraInt2" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono text-white focus:outline-none focus:ring-1 focus:ring-amber-400" />
+            <button type="button" onclick="cargarHoraActual('fechaHoraInt2')" class="px-2.5 py-1.5 bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 rounded-lg text-xs font-mono font-semibold transition-colors cursor-pointer">
+              Hora Actual
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 space-y-2">
+            <div class="text-xs font-bold uppercase font-mono text-amber-400 pb-1 border-b border-slate-800">Corrientes [A]</div>
+            <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+              <div><label class="text-[10px] text-slate-400">L1 [A]:</label><input type="number" step="0.1" id="int2_l1" value="840" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[10px] text-slate-400">L2 [A]:</label><input type="number" step="0.1" id="int2_l2" value="830" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[10px] text-slate-400">L3 [A]:</label><input type="number" step="0.1" id="int2_l3" value="850" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div class="bg-amber-950/30 rounded p-0.5 border border-amber-900/40"><label class="text-[10px] text-amber-300 font-bold">Ne [A]:</label><input type="number" step="0.1" id="int2_ne" value="38" class="w-full bg-slate-900 border border-amber-500/50 rounded p-1 text-right text-amber-200 font-bold" oninput="actualizarDiagramaYCalculos()"></div>
+            </div>
+          </div>
+
+          <div class="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 space-y-2">
+            <div class="text-xs font-bold uppercase font-mono text-sky-400 pb-1 border-b border-slate-800">Tensiones [V] (LL y LN)</div>
+            <div class="grid grid-cols-3 gap-2 text-xs font-mono">
+              <div><label class="text-[10px] text-slate-400">U12:</label><input type="number" step="0.1" id="int2_u12" value="400" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[10px] text-slate-400">U23:</label><input type="number" step="0.1" id="int2_u23" value="401" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[10px] text-slate-400">U31:</label><input type="number" step="0.1" id="int2_u31" value="399" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 text-xs font-mono pt-1">
+              <div><label class="text-[10px] text-slate-400">U1:</label><input type="number" step="0.1" id="int2_u1" value="230" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[10px] text-slate-400">U2:</label><input type="number" step="0.1" id="int2_u2" value="231" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[10px] text-slate-400">U3:</label><input type="number" step="0.1" id="int2_u3" value="230" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div class="bg-sky-950/30 rounded p-0.5 border border-sky-800/40"><label class="text-[10px] text-sky-300 font-bold">U0:</label><input type="number" step="0.1" id="int2_u0" value="1.1" class="w-full bg-slate-900 border border-sky-600 rounded p-1 text-right text-sky-200 font-bold" oninput="actualizarDiagramaYCalculos()"></div>
+            </div>
+          </div>
+
+          <div class="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between pb-1 border-b border-slate-800">
+              <span class="text-xs font-bold uppercase font-mono text-emerald-400">Potencias Int 2</span>
+              <button type="button" onclick="calcularTotalesInt2()" class="text-[10px] text-emerald-400 hover:underline cursor-pointer">Auto Sumar</button>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 text-xs font-mono">
+              <div><label class="text-[9px] text-slate-400">P1 [kW]</label><input type="number" id="int2_p1" value="188" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-slate-400">P2 [kW]</label><input type="number" id="int2_p2" value="185" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-slate-400">P3 [kW]</label><input type="number" id="int2_p3" value="190" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-amber-400 font-bold">P_tot</label><input type="number" id="int2_pTotal" value="563" class="w-full bg-slate-900 border border-amber-500/50 rounded p-1 text-right text-amber-300 font-bold" oninput="actualizarDiagramaYCalculos()"></div>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 text-xs font-mono">
+              <div><label class="text-[9px] text-slate-400">Q1 [kvar]</label><input type="number" id="int2_q1" value="55" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-slate-400">Q2 [kvar]</label><input type="number" id="int2_q2" value="58" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-slate-400">Q3 [kvar]</label><input type="number" id="int2_q3" value="54" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-indigo-400 font-bold">Q_tot</label><input type="number" id="int2_qTotal" value="167" class="w-full bg-slate-900 border border-indigo-500/50 rounded p-1 text-right text-indigo-300 font-bold" oninput="actualizarDiagramaYCalculos()"></div>
+            </div>
+            <div class="grid grid-cols-4 gap-1.5 text-xs font-mono">
+              <div><label class="text-[9px] text-slate-400">S1 [kVA]</label><input type="number" id="int2_s1" value="196" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-slate-400">S2 [kVA]</label><input type="number" id="int2_s2" value="194" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-slate-400">S3 [kVA]</label><input type="number" id="int2_s3" value="197" class="w-full bg-slate-900 border border-slate-700 rounded p-1 text-right text-white" oninput="actualizarDiagramaYCalculos()"></div>
+              <div><label class="text-[9px] text-emerald-400 font-bold">S_tot</label><input type="number" id="int2_sTotal" value="587" class="w-full bg-slate-900 border border-emerald-500/50 rounded p-1 text-right text-emerald-300 font-bold" oninput="actualizarDiagramaYCalculos()"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. OPERARIOS A CARGO (SELECCIÓN MÚLTIPLE MEJORADA) -->
+      <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl mt-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-3 border-b border-slate-800 gap-2">
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-white uppercase tracking-wider flex items-center gap-2">
+              <span class="w-6 h-6 rounded bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs">6</span>
+              OPERARIOS A CARGO (Selección Múltiple)
+            </h3>
+            <p class="text-xs text-slate-400">Personal técnico matriculado responsable de la maniobra e inspección técnica.</p>
+          </div>
+
+          <div class="flex items-center gap-2 text-xs font-semibold">
+            <button type="button" onclick="selectAllOperators(true)" class="text-indigo-400 hover:text-indigo-300 underline cursor-pointer">
+              Seleccionar Todos
+            </button>
+            <span class="text-slate-600">·</span>
+            <button type="button" onclick="selectAllOperators(false)" class="text-slate-400 hover:text-slate-300 underline cursor-pointer">
+              Limpiar Selección
+            </button>
+          </div>
+        </div>
+
+        <!-- Banner de Operarios Seleccionados en Tiempo Real -->
+        <div class="mt-4 p-3 bg-slate-950/80 rounded-xl border border-indigo-900/40">
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <span class="text-indigo-300 font-bold font-mono" id="operariosCounter">
+              Operarios seleccionados para enviar a la planilla (2):
+            </span>
+          </div>
+          <div id="operariosChips" class="flex flex-wrap gap-1.5 text-xs font-medium min-h-[30px]"></div>
+        </div>
+
+        <!-- Grilla interactiva de los 12 operarios -->
+        <div class="mt-3">
+          <label class="block text-xs font-medium text-slate-400 mb-1">
+            Haga clic en los operarios para marcar o desmarcar la asignación:
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-2" id="operatorsGrid"></div>
+        </div>
+
+        <select id="selectOperariosMultiple" multiple class="hidden"></select>
+      </section>
+
+      <!-- BOTÓN FINALIZAR Y ENVIAR RESPUESTAS -->
+      <div class="mt-8 pt-4 border-t border-slate-800">
+        <button
+          type="button"
+          id="btnEnviar"
+          onclick="finalizarYEnviar()"
+          class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 hover:from-amber-300 hover:to-amber-400 text-slate-950 text-base sm:text-lg font-black tracking-wide uppercase shadow-2xl shadow-amber-500/25 transition-all transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-3"
+        >
+          <span>🚀 FINALIZAR Y ENVIAR RESPUESTAS</span>
+        </button>
+        <p class="text-center text-xs text-slate-400 mt-2">
+          Envía el informe a la planilla de Google Sheets, genera el archivo CSV de respaldo y reinicia el formulario.
+        </p>
+      </div>
+
+    </form>
+
+    <!-- EVALUACIÓN Y AUDITORÍA EN TIEMPO REAL -->
+    <section id="panelAuditoria" class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-sm sm:text-base font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
+          <span>📊 Auditoría Técnica y Evaluación AEA 90364-7-710</span>
+        </h3>
+        <span id="badgeDictamen" class="px-3 py-1 rounded-full text-xs font-mono font-extrabold border bg-emerald-950 text-emerald-400 border-emerald-600">
+          EXCELENTE (98%)
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+        <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+          <div class="text-[10px] font-mono text-slate-400 uppercase">Cos φ Global (FP)</div>
+          <div class="text-xl font-black font-mono text-white mt-1" id="valCosPhi">0.957</div>
+          <div class="text-[11px] text-emerald-400 font-semibold" id="valFPEval">Excelente (Sin penalización)</div>
+        </div>
+
+        <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+          <div class="text-[10px] font-mono text-slate-400 uppercase">Potencia Demanda Total</div>
+          <div class="text-xl font-black font-mono text-amber-400 mt-1" id="valPotenciaS">1218.0 <span class="text-xs font-normal">kVA</span></div>
+          <div class="text-[11px] text-slate-300" id="valPotenciaP">P: 1166.0 kW | Q: 354.0 kvar</div>
+        </div>
+
+        <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+          <div class="text-[10px] font-mono text-slate-400 uppercase">Fuente 1 (TR1 / GE1)</div>
+          <div class="text-base font-bold font-mono text-sky-400 mt-1" id="valCargaF1">50.5% Carga</div>
+          <div class="text-[11px] text-emerald-300" id="valReservaF1">Reserva: 619.0 kVA (49.5%)</div>
+        </div>
+
+        <div class="p-3 bg-slate-950/70 rounded-xl border border-slate-800">
+          <div class="text-[10px] font-mono text-slate-400 uppercase">Fuente 2 (TR2 / GE2)</div>
+          <div class="text-base font-bold font-mono text-sky-400 mt-1" id="valCargaF2">47.0% Carga</div>
+          <div class="text-[11px] text-emerald-300" id="valReservaF2">Reserva: 663.0 kVA (53.0%)</div>
+        </div>
+      </div>
+
+      <div class="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800 text-xs space-y-2">
+        <div class="text-slate-300" id="diagNeutro">
+          <strong>Diagnóstico Neutro & Armónicos:</strong> Conforme con AEA 90364-7-710.
+        </div>
+        <div class="text-slate-400 text-[11px]" id="diagObservaciones">
+          <strong>Síntesis Técnica:</strong> Operación equilibrada en ambas barras.
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DE CONFIRMACIÓN -->
+  <div id="modalConfirmacion" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-xl w-full p-6 shadow-2xl text-center space-y-4">
+      <div class="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-3xl mx-auto border-2 border-emerald-400 animate-bounce">
+        ✓
+      </div>
+      <h3 class="text-xl font-black text-white">Datos registrados correctamente en la planilla</h3>
+      <p class="text-xs text-slate-300">
+        El paquete JSON con el Bloque de Mediciones y Bloque de Auditoría fue transmitido a Google Apps Script.
+      </p>
+
+      <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 text-left text-xs font-mono text-slate-300 space-y-1">
+        <div>• <strong>Operarios asignados:</strong> <span id="modalOperariosTxt" class="text-amber-300 font-bold"></span></div>
+        <div>• <strong>Dictamen AEA:</strong> <span id="modalDictamenTxt" class="text-emerald-400 font-bold"></span></div>
+        <div>• <strong>Cos φ Global:</strong> <span id="modalCosPhiTxt"></span></div>
+        <div>• <strong>Copia CSV local:</strong> <span class="text-emerald-300">Descargada en su equipo</span></div>
+      </div>
+
+      <button
+        type="button"
+        onclick="cerrarModalYNuevoRegistro()"
+        class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 text-sm font-black uppercase tracking-wider shadow-lg shadow-amber-500/20 cursor-pointer"
+      >
+        ↺ NUEVO REGISTRO / VOLVER AL INICIO
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // 12 OPERARIOS OFICIALES
+    const LISTA_OPERARIOS = [
+      'Murillo José Luis',
+      'Novicov Federico',
+      'Cabañas Gustavo',
+      'Condorí Lucas',
+      'Bejarano Diego',
+      'Landa Alejandro',
+      'Gimenez Andres',
+      'Fernandes Yair',
+      'Sinatra Matías',
+      'Olmedo Orlando',
+      'Soria Carlos',
+      'Masman Diego'
+    ];
+
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz9qYPzKrB8bn3P84cdsWkar8NPWax9m73Q0BiPqSg3z6JKOYnHu9H7kUzr1sMI4s5brg/exec';
+
+    function inicializarOperarios() {
+      const grid = document.getElementById('operatorsGrid');
+      const select = document.getElementById('selectOperariosMultiple');
+      grid.innerHTML = '';
+      select.innerHTML = '';
+
+      LISTA_OPERARIOS.forEach((op, idx) => {
+        const checked = (idx === 0 || idx === 3);
+
+        const div = document.createElement('label');
+        div.className = `flex items-center justify-between p-2.5 rounded-lg border text-xs cursor-pointer transition-all ${
+          checked ? 'bg-indigo-950/40 border-indigo-500 text-white font-semibold' : 'bg-slate-950/40 border-slate-800 text-slate-300 hover:border-slate-700'
+        }`;
+        div.id = `label_op_${idx}`;
+        div.innerHTML = `
+          <span class="truncate mr-2">${op}</span>
+          <input type="checkbox" name="operario" value="${op}" ${checked ? 'checked' : ''} class="accent-indigo-500 w-4 h-4 cursor-pointer" onchange="onOperatorChange(${idx})">
+        `;
+        grid.appendChild(div);
+
+        const option = document.createElement('option');
+        option.value = op;
+        option.text = op;
+        option.selected = checked;
+        select.appendChild(option);
+      });
+
+      actualizarVistaOperarios();
+    }
+
+    function onOperatorChange(idx) {
+      const label = document.getElementById(`label_op_${idx}`);
+      const checkbox = label.querySelector('input');
+      if (checkbox.checked) {
+        label.className = 'flex items-center justify-between p-2.5 rounded-lg border text-xs cursor-pointer transition-all bg-indigo-950/40 border-indigo-500 text-white font-semibold';
+      } else {
+        label.className = 'flex items-center justify-between p-2.5 rounded-lg border text-xs cursor-pointer transition-all bg-slate-950/40 border-slate-800 text-slate-300 hover:border-slate-700';
+      }
+      actualizarVistaOperarios();
+    }
+
+    function selectAllOperators(select) {
+      const checkboxes = document.querySelectorAll('input[name="operario"]');
+      checkboxes.forEach((cb, idx) => {
+        cb.checked = select;
+        const label = document.getElementById(`label_op_${idx}`);
+        if (select) {
+          label.className = 'flex items-center justify-between p-2.5 rounded-lg border text-xs cursor-pointer transition-all bg-indigo-950/40 border-indigo-500 text-white font-semibold';
+        } else {
+          label.className = 'flex items-center justify-between p-2.5 rounded-lg border text-xs cursor-pointer transition-all bg-slate-950/40 border-slate-800 text-slate-300 hover:border-slate-700';
+        }
+      });
+      actualizarVistaOperarios();
+    }
+
+    // CAPTURAR OPERARIOS MARCADOS
+    function obtenerOperariosSeleccionados() {
+      const checkboxes = document.querySelectorAll('input[name="operario"]:checked');
+      const list = [];
+      checkboxes.forEach(cb => {
+        if (cb.value && cb.value.trim() !== '') {
+          list.push(cb.value.trim());
+        }
+      });
+      return list;
+    }
+
+    function actualizarVistaOperarios() {
+      const list = obtenerOperariosSeleccionados();
+      const counter = document.getElementById('operariosCounter');
+      const chips = document.getElementById('operariosChips');
+
+      counter.textContent = `Operarios seleccionados para enviar a la planilla (${list.length}):`;
+
+      if (list.length === 0) {
+        chips.innerHTML = `<span class="text-amber-400 text-xs font-semibold">⚠️ Ningún operario seleccionado. Se marcará "Sin operarios asignados".</span>`;
+      } else {
+        chips.innerHTML = list.map(op => `
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-indigo-950/80 border border-indigo-700 text-indigo-200 text-xs font-semibold">
+            ✓ ${op}
+          </span>
+        `).join('');
+      }
+
+      const select = document.getElementById('selectOperariosMultiple');
+      Array.from(select.options).forEach(opt => {
+        opt.selected = list.includes(opt.value);
+      });
+    }
+
+    function setAllSources(active) {
+      const radios = document.querySelectorAll('input[name^="src_"]');
+      radios.forEach(r => {
+        if (r.value === (active ? 'SI' : 'NO')) r.checked = true;
+      });
+      actualizarDiagramaYCalculos();
+    }
+
+    function cargarHoraActual(elementId) {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById(elementId).value = `${y}-${m}-${d}T${hh}:${mm}`;
+    }
+
+    function toggleBreakerManual(pos) {
+      const sel = document.getElementById('selInt1');
+      sel.value = sel.value === pos ? 'Ninguno' : pos;
+      actualizarDiagramaYCalculos();
+    }
+
+    function toggleBreaker2Manual(pos) {
+      const sel = document.getElementById('selInt2');
+      sel.value = sel.value === pos ? 'Ninguno' : pos;
+      actualizarDiagramaYCalculos();
+    }
+
+    function toggleQ9Manual() {
+      const chk = document.getElementById('checkQ9');
+      chk.checked = !chk.checked;
+      actualizarDiagramaYCalculos();
+    }
+
+    function calcularTotalesInt1() {
+      const p1 = parseFloat(document.getElementById('int1_p1').value) || 0;
+      const p2 = parseFloat(document.getElementById('int1_p2').value) || 0;
+      const p3 = parseFloat(document.getElementById('int1_p3').value) || 0;
+      document.getElementById('int1_pTotal').value = (p1 + p2 + p3).toFixed(1);
+
+      const q1 = parseFloat(document.getElementById('int1_q1').value) || 0;
+      const q2 = parseFloat(document.getElementById('int1_q2').value) || 0;
+      const q3 = parseFloat(document.getElementById('int1_q3').value) || 0;
+      document.getElementById('int1_qTotal').value = (q1 + q2 + q3).toFixed(1);
+
+      const s1 = parseFloat(document.getElementById('int1_s1').value) || 0;
+      const s2 = parseFloat(document.getElementById('int1_s2').value) || 0;
+      const s3 = parseFloat(document.getElementById('int1_s3').value) || 0;
+      document.getElementById('int1_sTotal').value = (s1 + s2 + s3).toFixed(1);
+
+      actualizarDiagramaYCalculos();
+    }
+
+    function calcularTotalesInt2() {
+      const p1 = parseFloat(document.getElementById('int2_p1').value) || 0;
+      const p2 = parseFloat(document.getElementById('int2_p2').value) || 0;
+      const p3 = parseFloat(document.getElementById('int2_p3').value) || 0;
+      document.getElementById('int2_pTotal').value = (p1 + p2 + p3).toFixed(1);
+
+      const q1 = parseFloat(document.getElementById('int2_q1').value) || 0;
+      const q2 = parseFloat(document.getElementById('int2_q2').value) || 0;
+      const q3 = parseFloat(document.getElementById('int2_q3').value) || 0;
+      document.getElementById('int2_qTotal').value = (q1 + q2 + q3).toFixed(1);
+
+      const s1 = parseFloat(document.getElementById('int2_s1').value) || 0;
+      const s2 = parseFloat(document.getElementById('int2_s2').value) || 0;
+      const s3 = parseFloat(document.getElementById('int2_s3').value) || 0;
+      document.getElementById('int2_sTotal').value = (s1 + s2 + s3).toFixed(1);
+
+      actualizarDiagramaYCalculos();
+    }
+
+    function actualizarDiagramaYCalculos() {
+      const int1 = document.getElementById('selInt1').value;
+      const int2 = document.getElementById('selInt2').value;
+      const q9Closed = document.getElementById('checkQ9').checked;
+
+      const srcTR1 = document.querySelector('input[name="src_tr1"]:checked')?.value === 'SI';
+      const srcGE1 = document.querySelector('input[name="src_ge1"]:checked')?.value === 'SI';
+      const srcTR2 = document.querySelector('input[name="src_tr2"]:checked')?.value === 'SI';
+      const srcGE2 = document.querySelector('input[name="src_ge2"]:checked')?.value === 'SI';
+
+      const q1Closed = (int1 === 'G1');
+      const q2Closed = (int1 === 'T1');
+      const q3Closed = (int2 === 'G2');
+      const q4Closed = (int2 === 'T2');
+
+      const COLOR_CERRADO = '#ef4444';
+      const COLOR_ABIERTO = '#22c55e';
+      const COLOR_ENERGIZADO = '#ef4444';
+      const COLOR_DESENERGIZADO = '#64748b';
+
+      document.getElementById('boxQ2').setAttribute('stroke', q2Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+      document.getElementById('lineQ2').setAttribute('stroke', q2Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+      document.getElementById('lblQ2').textContent = q2Closed ? 'CERRADO' : 'ABIERTO';
+      document.getElementById('lblQ2').setAttribute('fill', q2Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+
+      document.getElementById('boxQ1').setAttribute('stroke', q1Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+      document.getElementById('lineQ1').setAttribute('stroke', q1Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+      document.getElementById('lblQ1').textContent = q1Closed ? 'CERRADO' : 'ABIERTO';
+      document.getElementById('lblQ1').setAttribute('fill', q1Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+
+      document.getElementById('boxQ4').setAttribute('stroke', q4Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+      document.getElementById('lineQ4').setAttribute('stroke', q4Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+      document.getElementById('lblQ4').textContent = q4Closed ? 'CERRADO' : 'ABIERTO';
+      document.getElementById('lblQ4').setAttribute('fill', q4Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+
+      document.getElementById('boxQ3').setAttribute('stroke', q3Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+      document.getElementById('lineQ3').setAttribute('stroke', q3Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+      document.getElementById('lblQ3').textContent = q3Closed ? 'CERRADO' : 'ABIERTO';
+      document.getElementById('lblQ3').setAttribute('fill', q3Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+
+      document.getElementById('boxQ9').setAttribute('stroke', q9Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+      document.getElementById('lineQ9').setAttribute('stroke', q9Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+      document.getElementById('lblQ9').textContent = q9Closed ? 'CERRADO' : 'ABIERTO';
+      document.getElementById('lblQ9').setAttribute('fill', q9Closed ? COLOR_CERRADO : COLOR_ABIERTO);
+
+      const barra1Energizada = (q2Closed && srcTR1) || (q1Closed && srcGE1);
+      const barra2Energizada = (q4Closed && srcTR2) || (q3Closed && srcGE2);
+
+      const barra1Real = barra1Energizada || (q9Closed && barra2Energizada);
+      const barra2Real = barra2Energizada || (q9Closed && barra1Energizada);
+
+      document.getElementById('lineTR1').setAttribute('stroke', srcTR1 ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+      document.getElementById('lineGE1').setAttribute('stroke', srcGE1 ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+      document.getElementById('lineTR2').setAttribute('stroke', srcTR2 ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+      document.getElementById('lineGE2').setAttribute('stroke', srcGE2 ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+
+      document.getElementById('lineQ2_out').setAttribute('stroke', (q2Closed && srcTR1) ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+      document.getElementById('lineQ1_out').setAttribute('stroke', (q1Closed && srcGE1) ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+      document.getElementById('lineQ4_out').setAttribute('stroke', (q4Closed && srcTR2) ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+      document.getElementById('lineQ3_out').setAttribute('stroke', (q3Closed && srcGE2) ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+
+      document.getElementById('bus1').setAttribute('stroke', barra1Real ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+      document.getElementById('bus2').setAttribute('stroke', barra2Real ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+      document.getElementById('lineEnlaceIzq').setAttribute('stroke', (barra1Real && q9Closed) ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+      document.getElementById('lineEnlaceDer').setAttribute('stroke', (barra2Real && q9Closed) ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+      document.getElementById('lineCarga1').setAttribute('stroke', barra1Real ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+      document.getElementById('arrowCarga1').setAttribute('fill', barra1Real ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+      document.getElementById('lineCarga2').setAttribute('stroke', barra2Real ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+      document.getElementById('arrowCarga2').setAttribute('fill', barra2Real ? COLOR_ENERGIZADO : COLOR_DESENERGIZADO);
+
+      const s1 = parseFloat(document.getElementById('int1_sTotal').value) || 0;
+      const p1 = parseFloat(document.getElementById('int1_pTotal').value) || 0;
+      const q1 = parseFloat(document.getElementById('int1_qTotal').value) || 0;
+
+      const s2 = parseFloat(document.getElementById('int2_sTotal').value) || 0;
+      const p2 = parseFloat(document.getElementById('int2_pTotal').value) || 0;
+      const q2 = parseFloat(document.getElementById('int2_qTotal').value) || 0;
+
+      const pTot = p1 + p2;
+      const qTot = q1 + q2;
+      const sTot = s1 + s2;
+
+      let cosPhi = 1.0;
+      if (sTot > 0) cosPhi = Math.min(1.0, Math.max(0, pTot / sTot));
+
+      const nom1 = int1 === 'T1' ? 1250 : (int1 === 'G1' ? 1505 : 0);
+      const nom2 = int2 === 'T2' ? 1250 : (int2 === 'G2' ? 1505 : 0);
+
+      const carga1 = nom1 > 0 ? (s1 / nom1) * 100 : 0;
+      const res1 = nom1 > 0 ? Math.max(0, nom1 - s1) : 0;
+
+      const carga2 = nom2 > 0 ? (s2 / nom2) * 100 : 0;
+      const res2 = nom2 > 0 ? Math.max(0, nom2 - s2) : 0;
+
+      document.getElementById('valCosPhi').textContent = cosPhi.toFixed(3);
+      const fpEval = cosPhi >= 0.95 ? 'Excelente' : (cosPhi >= 0.92 ? 'Bueno' : (cosPhi >= 0.85 ? 'Regular' : 'Malo'));
+      document.getElementById('valFPEval').textContent = `${fpEval} (${cosPhi < 0.85 ? 'Riesgo de penalización' : 'Dentro de norma'})`;
+
+      document.getElementById('valPotenciaS').innerHTML = `${sTot.toFixed(1)} <span class="text-xs font-normal">kVA</span>`;
+      document.getElementById('valPotenciaP').textContent = `P: ${pTot.toFixed(1)} kW | Q: ${qTot.toFixed(1)} kvar`;
+
+      document.getElementById('valCargaF1').textContent = nom1 > 0 ? `${carga1.toFixed(1)}% (${int1 === 'T1' ? 'TR1' : 'GE1'})` : 'En reposo';
+      document.getElementById('valReservaF1').textContent = nom1 > 0 ? `Reserva: ${res1.toFixed(1)} kVA / ${nom1} kVA` : '0 kVA';
+
+      document.getElementById('valCargaF2').textContent = nom2 > 0 ? `${carga2.toFixed(1)}% (${int2 === 'T2' ? 'TR2' : 'GE2'})` : 'En reposo';
+      document.getElementById('valReservaF2').textContent = nom2 > 0 ? `Reserva: ${res2.toFixed(1)} kVA / ${nom2} kVA` : '0 kVA';
+
+      let dictamen = 'EXCELENTE';
+      let score = 98;
+      if (carga1 > 100 || carga2 > 100 || cosPhi < 0.80) {
+        dictamen = 'MALO';
+        score = 50;
+      } else if (carga1 > 80 || carga2 > 80 || cosPhi < 0.90) {
+        dictamen = 'REGULAR';
+        score = 75;
+      } else if (cosPhi < 0.95) {
+        dictamen = 'BUENO';
+        score = 88;
+      }
+
+      const badge = document.getElementById('badgeDictamen');
+      badge.textContent = `${dictamen} (${score}%)`;
+      badge.className = `px-3 py-1 rounded-full text-xs font-mono font-extrabold border ${
+        dictamen === 'EXCELENTE' ? 'bg-emerald-950 text-emerald-400 border-emerald-600' :
+        dictamen === 'BUENO' ? 'bg-sky-950 text-sky-400 border-sky-600' :
+        dictamen === 'REGULAR' ? 'bg-amber-950 text-amber-400 border-amber-600' :
+        'bg-rose-950 text-rose-400 border-rose-600'
+      }`;
+    }
+
+    async function finalizarYEnviar() {
+      const btn = document.getElementById('btnEnviar');
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳ ENVIANDO A PLANILLA GOOGLE SHEETS...</span>';
+
+      // 1. CAPTURA SEGURA DE OPERARIOS (Texto y Arreglo)
+      const operariosArr = obtenerOperariosSeleccionados();
+      const operariosTexto = operariosArr.length > 0 ? operariosArr.join(', ') : 'Sin operarios asignados';
+      const operariosPuntoYComa = operariosArr.length > 0 ? operariosArr.join('; ') : 'Sin operarios asignados';
+
+      const fechaInt1 = document.getElementById('fechaHoraInt1').value || new Date().toISOString().slice(0, 16);
+      const fechaInt2 = document.getElementById('fechaHoraInt2').value || new Date().toISOString().slice(0, 16);
+
+      const int1 = document.getElementById('selInt1').value;
+      const int2 = document.getElementById('selInt2').value;
+      const q9Closed = document.getElementById('checkQ9').checked;
+
+      const m1 = {
+        l1: parseFloat(document.getElementById('int1_l1').value) || 0,
+        l2: parseFloat(document.getElementById('int1_l2').value) || 0,
+        l3: parseFloat(document.getElementById('int1_l3').value) || 0,
+        ne: parseFloat(document.getElementById('int1_ne').value) || 0,
+        u12: parseFloat(document.getElementById('int1_u12').value) || 0,
+        u23: parseFloat(document.getElementById('int1_u23').value) || 0,
+        u31: parseFloat(document.getElementById('int1_u31').value) || 0,
+        u1: parseFloat(document.getElementById('int1_u1').value) || 0,
+        u2: parseFloat(document.getElementById('int1_u2').value) || 0,
+        u3: parseFloat(document.getElementById('int1_u3').value) || 0,
+        u0: parseFloat(document.getElementById('int1_u0').value) || 0,
+        p1: parseFloat(document.getElementById('int1_p1').value) || 0,
+        p2: parseFloat(document.getElementById('int1_p2').value) || 0,
+        p3: parseFloat(document.getElementById('int1_p3').value) || 0,
+        pTotal: parseFloat(document.getElementById('int1_pTotal').value) || 0,
+        q1: parseFloat(document.getElementById('int1_q1').value) || 0,
+        q2: parseFloat(document.getElementById('int1_q2').value) || 0,
+        q3: parseFloat(document.getElementById('int1_q3').value) || 0,
+        qTotal: parseFloat(document.getElementById('int1_qTotal').value) || 0,
+        s1: parseFloat(document.getElementById('int1_s1').value) || 0,
+        s2: parseFloat(document.getElementById('int1_s2').value) || 0,
+        s3: parseFloat(document.getElementById('int1_s3').value) || 0,
+        sTotal: parseFloat(document.getElementById('int1_sTotal').value) || 0,
+      };
+
+      const m2 = {
+        l1: parseFloat(document.getElementById('int2_l1').value) || 0,
+        l2: parseFloat(document.getElementById('int2_l2').value) || 0,
+        l3: parseFloat(document.getElementById('int2_l3').value) || 0,
+        ne: parseFloat(document.getElementById('int2_ne').value) || 0,
+        u12: parseFloat(document.getElementById('int2_u12').value) || 0,
+        u23: parseFloat(document.getElementById('int2_u23').value) || 0,
+        u31: parseFloat(document.getElementById('int2_u31').value) || 0,
+        u1: parseFloat(document.getElementById('int2_u1').value) || 0,
+        u2: parseFloat(document.getElementById('int2_u2').value) || 0,
+        u3: parseFloat(document.getElementById('int2_u3').value) || 0,
+        u0: parseFloat(document.getElementById('int2_u0').value) || 0,
+        p1: parseFloat(document.getElementById('int2_p1').value) || 0,
+        p2: parseFloat(document.getElementById('int2_p2').value) || 0,
+        p3: parseFloat(document.getElementById('int2_p3').value) || 0,
+        pTotal: parseFloat(document.getElementById('int2_pTotal').value) || 0,
+        q1: parseFloat(document.getElementById('int2_q1').value) || 0,
+        q2: parseFloat(document.getElementById('int2_q2').value) || 0,
+        q3: parseFloat(document.getElementById('int2_q3').value) || 0,
+        qTotal: parseFloat(document.getElementById('int2_qTotal').value) || 0,
+        s1: parseFloat(document.getElementById('int2_s1').value) || 0,
+        s2: parseFloat(document.getElementById('int2_s2').value) || 0,
+        s3: parseFloat(document.getElementById('int2_s3').value) || 0,
+        sTotal: parseFloat(document.getElementById('int2_sTotal').value) || 0,
+      };
+
+      const pTot = m1.pTotal + m2.pTotal;
+      const qTot = m1.qTotal + m2.qTotal;
+      const sTot = m1.sTotal + m2.sTotal;
+      const cosPhi = sTot > 0 ? Math.min(1.0, Math.max(0, pTot / sTot)) : 1.0;
+      const evaluacionFP = cosPhi >= 0.95 ? 'Excelente' : (cosPhi >= 0.92 ? 'Bueno' : (cosPhi >= 0.85 ? 'Regular' : 'Malo'));
+
+      const nom1 = int1 === 'T1' ? 1250 : (int1 === 'G1' ? 1505 : 0);
+      const nom2 = int2 === 'T2' ? 1250 : (int2 === 'G2' ? 1505 : 0);
+      const cargaF1 = nom1 > 0 ? parseFloat(((m1.sTotal / nom1) * 100).toFixed(1)) : 0;
+      const resF1 = nom1 > 0 ? parseFloat(Math.max(0, nom1 - m1.sTotal).toFixed(1)) : 0;
+      const cargaF2 = nom2 > 0 ? parseFloat(((m2.sTotal / nom2) * 100).toFixed(1)) : 0;
+      const resF2 = nom2 > 0 ? parseFloat(Math.max(0, nom2 - m2.sTotal).toFixed(1)) : 0;
+
+      const avgVLL1 = (m1.u12 + m1.u23 + m1.u31) / 3 || 1;
+      const maxDevVLL1 = Math.max(Math.abs(m1.u12 - avgVLL1), Math.abs(m1.u23 - avgVLL1), Math.abs(m1.u31 - avgVLL1));
+      const desbVLL1 = (maxDevVLL1 / avgVLL1) * 100;
+
+      const avgVLL2 = (m2.u12 + m2.u23 + m2.u31) / 3 || 1;
+      const maxDevVLL2 = Math.max(Math.abs(m2.u12 - avgVLL2), Math.abs(m2.u23 - avgVLL2), Math.abs(m2.u31 - avgVLL2));
+      const desbVLL2 = (maxDevVLL2 / avgVLL2) * 100;
+      const desbalanceVLL = parseFloat(Math.max(desbVLL1, desbVLL2).toFixed(2));
+
+      const avgVLN1 = (m1.u1 + m1.u2 + m1.u3) / 3 || 1;
+      const asimVLN1 = (Math.max(Math.abs(m1.u1 - avgVLN1), Math.abs(m1.u2 - avgVLN1), Math.abs(m1.u3 - avgVLN1)) / avgVLN1) * 100;
+      const avgVLN2 = (m2.u1 + m2.u2 + m2.u3) / 3 || 1;
+      const asimVLN2 = (Math.max(Math.abs(m2.u1 - avgVLN2), Math.abs(m2.u2 - avgVLN2), Math.abs(m2.u3 - avgVLN2)) / avgVLN2) * 100;
+      const asimetriaVLN = parseFloat(Math.max(asimVLN1, asimVLN2).toFixed(2));
+
+      const alertaNeutro = `Int1: In=${m1.ne}A (U0=${m1.u0}V) | Int2: In=${m2.ne}A (U0=${m2.u0}V). Calidad dentro de tolerancia AEA 710.`;
+      const dictamenAEA = (cargaF1 > 100 || cargaF2 > 100 || cosPhi < 0.80) ? 'MALO' : ((cargaF1 > 80 || cargaF2 > 80 || cosPhi < 0.90) ? 'REGULAR' : (cosPhi < 0.95 ? 'BUENO' : 'EXCELENTE'));
+      const observacionesDetalladas = `Auditoría AEA 90364-7-710. Dictamen: ${dictamenAEA}. Cos phi global: ${cosPhi.toFixed(3)} (${evaluacionFP}). S total: ${sTot.toFixed(1)} kVA. Fuente 1: ${int1} (${cargaF1}% de carga, reserva: ${resF1} kVA). Fuente 2: ${int2} (${cargaF2}% de carga, reserva: ${resF2} kVA). Q9 acoplamiento: ${q9Closed ? 'CERRADO' : 'ABIERTO'}. Operarios a cargo: ${operariosTexto}.`;
+
+      // 2. PAQUETE JSON ESTRUCTURADO (CON TODAS LAS CLAVES Y ALIAS PARA OPERARIOS)
+      const payload = {
+        mediciones: {
+          timestampEnvio: new Date().toISOString(),
+          fechaHoraInt1: fechaInt1,
+          fechaHoraInt2: fechaInt2,
+          operarios: operariosTexto,
+          operarios_a_cargo: operariosPuntoYComa,
+          Operarios_a_Cargo: operariosPuntoYComa,
+          operariosLista: operariosArr,
+          interruptor1: { posicion: int1, ...m1 },
+          interruptor2: { posicion: int2, ...m2 },
+          acoplamientoQ9: q9Closed ? 'CERRADO' : 'ABIERTO'
+        },
+
+        auditoria: {
+          cosPhi: parseFloat(cosPhi.toFixed(3)),
+          evaluacionFP,
+          cargaFuente1: cargaF1,
+          reservaFuente1: resF1,
+          cargaFuente2: cargaF2,
+          reservaFuente2: resF2,
+          desbalanceVLL,
+          asimetriaVLN,
+          alertaNeutro,
+          observacionesDetalladas,
+          dictamenAEA,
+          operariosResponsables: operariosTexto
+        },
+
+        // TODAS LAS VARIANTES DE CLAVES DE OPERARIOS PARA GOOGLE SHEETS
+        operarios: operariosTexto,
+        Operarios_a_Cargo: operariosPuntoYComa,
+        operarios_a_cargo: operariosPuntoYComa,
+        operariosACargo: operariosTexto,
+        Operarios: operariosTexto,
+        operariosTexto: operariosTexto,
+        operariosLista: operariosArr,
+
+        fechaHoraInt1: fechaInt1,
+        fechaHoraInt2: fechaInt2,
+        cosPhi: parseFloat(cosPhi.toFixed(3)),
+        evaluacionFP,
+        cargaFuente1: cargaF1,
+        reservaFuente1: resF1,
+        cargaFuente2: cargaF2,
+        reservaFuente2: resF2,
+        desbalanceVLL,
+        asimetriaVLN,
+        alertaNeutro,
+        observacionesDetalladas,
+        dictamenAEA,
+
+        int1_l1: m1.l1, int1_l2: m1.l2, int1_l3: m1.l3, int1_ne: m1.ne,
+        int1_u12: m1.u12, int1_u23: m1.u23, int1_u31: m1.u31,
+        int1_u1: m1.u1, int1_u2: m1.u2, int1_u3: m1.u3, int1_u0: m1.u0,
+        int1_pTotal: m1.pTotal, int1_qTotal: m1.qTotal, int1_sTotal: m1.sTotal,
+
+        int2_l1: m2.l1, int2_l2: m2.l2, int2_l3: m2.l3, int2_ne: m2.ne,
+        int2_u12: m2.u12, int2_u23: m2.u23, int2_u31: m2.u31,
+        int2_u1: m2.u1, int2_u2: m2.u2, int2_u3: m2.u3, int2_u0: m2.u0,
+        int2_pTotal: m2.pTotal, int2_qTotal: m2.qTotal, int2_sTotal: m2.sTotal,
+
+        sistema_sTotalKVA: sTot,
+        sistema_pTotalKW: pTot,
+        sistema_qTotalKvar: qTot
+      };
+
+      // 3. GENERAR RESPALDO CSV
+      descargarCopiaCSV(payload);
+
+      // 4. ENVÍO POST A GOOGLE APPS SCRIPT
+      try {
+        await fetch(GOOGLE_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.warn('POST finalizado:', err);
+      }
+
+      // 5. MOSTRAR CONFIRMACIÓN
+      document.getElementById('modalOperariosTxt').textContent = operariosTexto;
+      document.getElementById('modalDictamenTxt').textContent = dictamenAEA;
+      document.getElementById('modalCosPhiTxt').textContent = `${cosPhi.toFixed(3)} (${evaluacionFP})`;
+      document.getElementById('modalConfirmacion').classList.remove('hidden');
+
+      btn.disabled = false;
+      btn.innerHTML = '<span>🚀 FINALIZAR Y ENVIAR RESPUESTAS</span>';
+    }
+
+    function descargarCopiaCSV(p) {
+      const headers = ['Fecha_Int1', 'Fecha_Int2', 'Operarios_a_Cargo', 'CosPhi', 'Dictamen_AEA', 'S_Total_kVA', 'Carga_F1_Pct', 'Reserva_F1_kVA', 'Carga_F2_Pct', 'Reserva_F2_kVA'];
+      const values = [p.fechaHoraInt1, p.fechaHoraInt2, `"${p.operarios}"`, p.cosPhi, p.dictamenAEA, p.sistema_sTotalKVA, p.cargaFuente1, p.reservaFuente1, p.cargaFuente2, p.reservaFuente2];
+      const csv = '\uFEFF' + headers.join(';') + '\r\n' + values.join(';');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Auditoria_Subestacion_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function cerrarModalYNuevoRegistro() {
+      document.getElementById('modalConfirmacion').classList.add('hidden');
+      document.getElementById('substationForm').reset();
+      document.getElementById('checkQ9').checked = false;
+      document.getElementById('selInt1').value = 'Ninguno';
+      document.getElementById('selInt2').value = 'Ninguno';
+
+      selectAllOperators(false);
+      cargarHoraActual('fechaHoraInt1');
+      cargarHoraActual('fechaHoraInt2');
+      actualizarDiagramaYCalculos();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      cargarHoraActual('fechaHoraInt1');
+      cargarHoraActual('fechaHoraInt2');
+      inicializarOperarios();
+      actualizarDiagramaYCalculos();
+    });
+  </script>
+</body>
+</html>

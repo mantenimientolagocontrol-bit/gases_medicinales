@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema Integrado de Inspección UPS</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background-color: #0b0f19;
+      color: #e2e8f0;
+    }
+    .tab-active {
+      background-color: #f59e0b !important;
+      color: #000000 !important;
+      font-weight: 700;
+    }
+    select, input, textarea {
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+      border-color: #334155 !important;
+    }
+    select:focus, input:focus, textarea:focus {
+      border-color: #f59e0b !important;
+      outline: none;
+    }
+  </style>
+</head>
+<body class="min-h-screen font-sans pb-12 selection:bg-amber-500 selection:text-black">
+
+  <!-- HEADER / BARRA SUPERIOR MODO OSCURO -->
+  <header class="bg-[#0f172a] border-b border-slate-800 sticky top-0 z-50 shadow-lg">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="bg-amber-500/20 p-2 rounded-xl border border-amber-500/30">
+          <i class="fa-solid fa-shield-halved text-amber-500 text-xl"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-lg leading-none tracking-wide text-white uppercase">SISTEMA UPS</h1>
+          <p class="text-[10px] text-slate-400 font-semibold tracking-wider uppercase mt-0.5">INSPECCIÓN UNIFICADA</p>
+        </div>
+      </div>
+
+      <!-- BOTONES DE NAVEGACIÓN TIPO PESTAÑA -->
+      <nav class="hidden md:flex bg-[#1e293b] p-1 rounded-xl border border-slate-700/60 space-x-1">
+        <button id="tab-btn-inspeccion" onclick="switchTab('inspeccion')" class="py-1.5 px-4 rounded-lg flex items-center space-x-2 text-xs font-semibold tab-active transition-all">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Inspección</span>
+        </button>
+        <button id="tab-btn-registros" onclick="switchTab('registros')" class="py-1.5 px-4 rounded-lg flex items-center space-x-2 text-xs font-semibold text-slate-300 hover:text-white transition-all">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span>Registros</span>
+        </button>
+        <button id="tab-btn-lcd" onclick="switchTab('lcd')" class="py-1.5 px-4 rounded-lg flex items-center space-x-2 text-xs font-semibold text-slate-300 hover:text-white transition-all">
+          <i class="fa-solid fa-book-open"></i>
+          <span>LCD</span>
+        </button>
+      </nav>
+
+      <!-- BOTÓN OPERARIOS CABECERA -->
+      <button onclick="toggleModalOperarios()" class="bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-400 text-xs px-3 py-2 rounded-xl border border-emerald-700/50 font-medium flex items-center space-x-2 transition-all">
+        <i class="fa-solid fa-user-check"></i>
+        <span id="header-op-count">Operarios: Asignar</span>
+      </button>
+    </div>
+
+    <!-- PESTAÑAS MÓVILES -->
+    <nav class="flex md:hidden bg-[#1e293b] border-t border-slate-800 justify-around p-1">
+      <button onclick="switchTab('inspeccion')" class="py-2 px-3 text-xs font-bold text-amber-500">Inspección</button>
+      <button onclick="switchTab('registros')" class="py-2 px-3 text-xs font-bold text-slate-400">Registros</button>
+      <button onclick="switchTab('lcd')" class="py-2 px-3 text-xs font-bold text-slate-400">LCD</button>
+    </nav>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 mt-6">
+
+    <!-- ================= TAB 1: INSPECCIÓN ================= -->
+    <section id="tab-inspeccion" class="block space-y-6">
+      
+      <!-- CONFIGURACIÓN INICIAL DE LA INSPECCIÓN -->
+      <div class="bg-[#111827] rounded-2xl border border-slate-800/80 p-5 shadow-xl relative overflow-hidden">
+        <div class="flex justify-between items-center mb-5 border-b border-slate-800 pb-3">
+          <h2 class="text-white font-bold text-base flex items-center space-x-2 tracking-wide">
+            <i class="fa-solid fa-sliders text-amber-500"></i>
+            <span>Configuración Inicial de la Inspección</span>
+          </h2>
+          <span id="live-clock" class="text-xs bg-[#1e293b] text-slate-300 px-3 py-1 rounded-lg font-mono border border-slate-700">
+            --/--/---- --:--:--
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- 1. Sala Técnica -->
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">1. SALA TÉCNICA</label>
+            <select id="select-sala" onchange="actualizarEquiposSala()" class="w-full text-sm rounded-xl p-3 font-semibold border">
+              <option value="SALA (A) - 1°P">SALA (A) - 1°P (10 UPS)</option>
+              <option value="SALA (B) - 1°P">SALA (B) - 1°P (8 UPS)</option>
+              <option value="SALA (D) - 2°P">SALA (D) - 2°P (3 UPS)</option>
+              <option value="SALA (E) - Piso E">SALA (E) - Piso E (3 UPS)</option>
+            </select>
+            <p id="sala-help" class="text-[11px] text-slate-400 mt-1.5">Carga dinámicamente los equipos asignados de la sala.</p>
+          </div>
+
+          <!-- 2. UPS Objetivo -->
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">2. UPS OBJETIVO</label>
+            <select id="select-ups-objetivo" onchange="renderWorkflow()" class="w-full text-sm rounded-xl p-3 font-semibold border">
+              <!-- Dinámico -->
+            </select>
+            <p id="ups-help" class="text-[11px] text-slate-400 mt-1.5">Recorrerá las UPS en orden correlativo.</p>
+          </div>
+        </div>
+
+        <!-- 3. Tipo de Inspección -->
+        <div class="mt-5">
+          <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">3. TIPO DE INSPECCIÓN</label>
+          <div class="grid grid-cols-3 gap-3">
+            <button type="button" id="btn-tipo-Diario" onclick="setTipoInspeccion('Diario')" class="py-3 px-3 rounded-xl font-bold text-xs border transition-all bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/10">
+              Diario
+            </button>
+            <button type="button" id="btn-tipo-Periodico" onclick="setTipoInspeccion('Periodico')" class="py-3 px-3 rounded-xl font-bold text-xs border transition-all bg-[#1e293b] text-cyan-400 border-slate-700 hover:bg-slate-800">
+              Periódico
+            </button>
+            <button type="button" id="btn-tipo-Alarma" onclick="setTipoInspeccion('Alarma')" class="py-3 px-3 rounded-xl font-bold text-xs border transition-all bg-[#1e293b] text-rose-400 border-slate-700 hover:bg-slate-800">
+              <i class="fa-solid fa-triangle-exclamation mr-1 text-rose-500"></i>Alarma
+            </button>
+          </div>
+          <p id="tipo-desc" class="text-[11px] text-slate-400 mt-2">Revisión rápida de estado operativo e indicadores frontales.</p>
+        </div>
+
+        <!-- Operarios Firmantes Bar -->
+        <div class="mt-6 pt-4 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-[#182234] p-4 rounded-xl border border-slate-700/60 gap-3">
+          <div>
+            <span class="text-xs font-bold text-slate-300 block mb-1">Operarios firmantes:</span>
+            <div id="chips-operarios" class="flex flex-wrap gap-1.5">
+              <span class="text-xs text-amber-500 font-medium">⚠️ Debe seleccionar al menos un operario</span>
+            </div>
+          </div>
+          <button type="button" onclick="toggleModalOperarios()" class="bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-lg transition-all shrink-0">
+            Modificar Operarios
+          </button>
+        </div>
+      </div>
+
+      <!-- WORKFLOW CONTAINER DINÁMICO -->
+      <div id="workflow-container">
+        <!-- Generado mediante JavaScript -->
+      </div>
+
+      <!-- BOTÓN DE GUARDAR Y REGISTRAR -->
+      <div class="bg-[#111827] rounded-2xl border border-slate-800 p-4 shadow-xl">
+        <button id="btn-enviar" onclick="enviarInspeccion()" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-extrabold py-4 px-4 rounded-xl shadow-lg transition-all flex items-center justify-center space-x-2 text-base tracking-wide uppercase">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>Guardar y Registrar Inspección</span>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ================= TAB 2: REGISTROS ================= -->
+    <section id="tab-registros" class="hidden">
+      <div class="bg-[#111827] rounded-2xl border border-slate-800 p-5 shadow-xl">
+        <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+          <h2 class="text-white font-bold text-base flex items-center space-x-2">
+            <i class="fa-solid fa-list-check text-amber-500"></i>
+            <span>Historial de Inspecciones</span>
+          </h2>
+          <button onclick="cargarHistorial()" class="text-xs bg-[#1e293b] hover:bg-slate-700 text-slate-200 py-1.5 px-3 rounded-lg border border-slate-700 flex items-center space-x-1">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>Actualizar</span>
+          </button>
+        </div>
+
+        <div id="historial-loading" class="text-center py-8 text-slate-500">
+          <i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-amber-500"></i>
+          <p class="text-xs">Cargando registros desde Google Sheets...</p>
+        </div>
+
+        <div id="historial-lista" class="space-y-3">
+          <!-- Tarjetas del historial -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= TAB 3: INSTRUCTIVO LCD ================= -->
+    <section id="tab-lcd" class="hidden">
+      <div class="bg-[#111827] rounded-2xl border border-slate-800 p-5 shadow-xl">
+        <h2 class="text-white font-bold text-base mb-4 flex items-center space-x-2 border-b border-slate-800 pb-2">
+          <i class="fa-solid fa-book-open text-amber-500"></i>
+          <span>Instructivo de Navegación Display LCD</span>
+        </h2>
+
+        <div class="space-y-4 text-sm text-slate-300">
+          <div class="bg-amber-500/10 border-l-4 border-amber-500 p-4 rounded-r-xl text-amber-200 text-xs">
+            <p class="font-bold mb-1 text-sm"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Secuencia Estándar de Consulta:</p>
+            <p class="font-mono mt-1">* Pulsar ESC -&gt; Arriba/Abajo hasta el parámetro deseado -&gt; Enter.</p>
+            <p class="font-mono mt-1">* Pulsar Arriba/Abajo para visualizar las medidas de las fases.</p>
+            <p class="font-mono mt-1">* Al finalizar la toma de datos, pulsar ESC para volver al menú principal.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <div class="border border-slate-800 rounded-xl p-4 bg-[#182234]">
+              <h3 class="font-bold text-amber-400 uppercase mb-2">1. Salida (Output)</h3>
+              <ul class="list-disc list-inside space-y-1.5 text-slate-300">
+                <li>Potencia Activa: <strong>W</strong></li>
+                <li>Potencia Aparente: <strong>VA</strong></li>
+                <li>Corriente: <strong>A</strong></li>
+                <li>Porcentaje de Carga: <strong>%</strong></li>
+                <li>Tensión de Salida: <strong>V</strong></li>
+              </ul>
+            </div>
+
+            <div class="border border-slate-800 rounded-xl p-4 bg-[#182234]">
+              <h3 class="font-bold text-amber-400 uppercase mb-2">2. Entrada y Batería</h3>
+              <ul class="list-disc list-inside space-y-1.5 text-slate-300">
+                <li>Tensión / Frecuencia Entrada: <strong>V, Hz</strong></li>
+                <li>Tensión Batería: <strong>V</strong></li>
+                <li>Capacidad Batería: <strong>%</strong></li>
+                <li>Bus-DC / Temperatura: <strong>V, °C</strong></li>
+                <li>Tiempo Autonomía: <strong>min</strong></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL DE OPERARIOS -->
+  <div id="modal-operarios" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-[#111827] rounded-2xl border border-slate-800 shadow-2xl max-w-md w-full p-5 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-white text-base flex items-center space-x-2">
+          <i class="fa-solid fa-users text-amber-500"></i>
+          <span>Seleccionar Operarios Firmantes</span>
+        </h3>
+        <button onclick="toggleModalOperarios()" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 text-xs max-h-60 overflow-y-auto p-1" id="container-modal-operarios">
+        <!-- Renderizado de checkboxes -->
+      </div>
+
+      <div class="pt-3 border-t border-slate-800 flex justify-end">
+        <button onclick="toggleModalOperarios()" class="bg-amber-500 hover:bg-amber-400 text-black font-extrabold py-2 px-5 rounded-xl text-xs shadow-lg">
+          Aceptar Selección
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyWygax70GL27qO-FS3LtWI68V4KhDcCVl3Szd3jvJiY_MDm_utvTdn2kYcqayPiD-_/exec';
+
+    const SALAS_EQUIPOS = {
+      "SALA (A) - 1°P": ['UPS #12', 'UPS #13', 'UPS #14', 'UPS #15', 'UPS #16', 'UPS #20', 'UPS #21', 'UPS #22', 'UPS #23', 'UPS #24'],
+      "SALA (B) - 1°P": ['UPS #01', 'UPS #02', 'UPS #03', 'UPS #04', 'UPS #05', 'UPS #06', 'UPS #10', 'UPS #11'],
+      "SALA (D) - 2°P": ['UPS #07', 'UPS #08', 'UPS #09'],
+      "SALA (E) - Piso E": ['UPS #17', 'UPS #18', 'UPS #19']
+    };
+
+    const OPERARIOS = [
+      "Murillo José Luis", "Novicov Federico", "Cabañas Gustavo",
+      "Condorí Lucas", "Bejarano Diego", "Landa Alejandro",
+      "Gimenez Andres", "Fernandes Yair", "Sinatra Matías",
+      "Olmedo Orlando", "Soria Carlos", "Masman Diego"
+    ];
+
+    let currentTipo = 'Diario';
+    let operariosSeleccionados = [];
+
+    // Inicialización automática garantizada
+    window.onload = function() {
+      startClock();
+      renderOperariosModal();
+      actualizarEquiposSala();
+    };
+
+    function startClock() {
+      const update = () => {
+        const now = new Date();
+        const d = String(now.getDate()).padStart(2, '0');
+        const m = String(now.getMonth() + 1).padStart(2, '0');
+        const y = now.getFullYear();
+        const h = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        const s = String(now.getSeconds()).padStart(2, '0');
+        const reloj = document.getElementById('live-clock');
+        if (reloj) reloj.innerText = `${d}/${m}/${y} ${h}:${min}:${s}`;
+      };
+      update();
+      setInterval(update, 1000);
+    }
+
+    function switchTab(tab) {
+      ['inspeccion', 'registros', 'lcd'].forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        const btn = document.getElementById(`tab-btn-${t}`);
+        if(el) el.classList.add('hidden');
+        if(btn) btn.classList.remove('tab-active');
+      });
+      const activeEl = document.getElementById(`tab-${tab}`);
+      const activeBtn = document.getElementById(`tab-btn-${tab}`);
+      if(activeEl) activeEl.classList.remove('hidden');
+      if(activeBtn) activeBtn.classList.add('tab-active');
+
+      if (tab === 'registros') cargarHistorial();
+    }
+
+    function toggleModalOperarios() {
+      const modal = document.getElementById('modal-operarios');
+      if(modal) modal.classList.toggle('hidden');
+    }
+
+    function renderOperariosModal() {
+      const container = document.getElementById('container-modal-operarios');
+      if(!container) return;
+      container.innerHTML = OPERARIOS.map((op, idx) => `
+        <label class="flex items-center space-x-2 bg-[#1e293b] border border-slate-700/60 p-2.5 rounded-xl cursor-pointer hover:bg-slate-700 transition-colors select-none">
+          <input type="checkbox" id="op-cb-${idx}" value="${op}" onchange="onOperarioChange()" class="w-4 h-4 text-amber-500 rounded focus:ring-amber-500 bg-slate-900 border-slate-600 cursor-pointer">
+          <span class="truncate text-slate-200 font-medium text-xs">${op}</span>
+        </label>
+      `).join('');
+    }
+
+    function onOperarioChange() {
+      operariosSeleccionados = Array.from(document.querySelectorAll('#container-modal-operarios input[type="checkbox"]:checked')).map(cb => cb.value);
+      const chips = document.getElementById('chips-operarios');
+      const headerCount = document.getElementById('header-op-count');
+
+      if (operariosSeleccionados.length === 0) {
+        if(chips) chips.innerHTML = `<span class="text-xs text-amber-500 font-medium">⚠️ Debe seleccionar al menos un operario</span>`;
+        if(headerCount) headerCount.innerText = "Operarios: Asignar";
+      } else {
+        if(chips) chips.innerHTML = operariosSeleccionados.map(op => `
+          <span class="bg-[#111827] border border-slate-700 text-slate-200 text-xs px-2.5 py-1 rounded-lg flex items-center space-x-1">
+            <span>${op}</span>
+          </span>
+        `).join('');
+        if(headerCount) headerCount.innerText = `Operarios: (${operariosSeleccionados.length})`;
+      }
+    }
+
+    function actualizarEquiposSala() {
+      const salaSel = document.getElementById('select-sala');
+      const selectUps = document.getElementById('select-ups-objetivo');
+      if(!salaSel || !selectUps) return;
+
+      const sala = salaSel.value;
+      const equipos = SALAS_EQUIPOS[sala] || [];
+
+      selectUps.innerHTML = `
+        <option value="TODA LA SALA">★ TODA LA SALA (Recorrido secuencial completo - ${equipos.length} UPS)</option>
+        ${equipos.map(eq => `<option value="${eq}">${eq}</option>`).join('')}
+      `;
+      renderWorkflow();
+    }
+
+    function setTipoInspeccion(tipo) {
+      currentTipo = tipo;
+      ['Diario', 'Periodico', 'Alarma'].forEach(t => {
+        const btn = document.getElementById(`btn-tipo-${t}`);
+        if(!btn) return;
+        if (t === tipo) {
+          if (t === 'Diario') btn.className = "py-3 px-3 rounded-xl font-bold text-xs border transition-all bg-amber-500 text-black border-amber-500 shadow-lg shadow-amber-500/10";
+          if (t === 'Periodico') btn.className = "py-3 px-3 rounded-xl font-bold text-xs border transition-all bg-cyan-500 text-black border-cyan-500 shadow-lg shadow-cyan-500/10";
+          if (t === 'Alarma') btn.className = "py-3 px-3 rounded-xl font-bold text-xs border transition-all bg-rose-500 text-white border-rose-500 shadow-lg shadow-rose-500/10";
+        } else {
+          btn.className = "py-3 px-3 rounded-xl font-bold text-xs border transition-all bg-[#1e293b] text-slate-400 border-slate-700 hover:bg-slate-800";
+        }
+      });
+
+      const desc = document.getElementById('tipo-desc');
+      if (desc) {
+        if (tipo === 'Diario') desc.innerText = "Revisión rápida de estado operativo e indicadores frontales.";
+        if (tipo === 'Periodico') desc.innerText = "Toma detallada de parámetros eléctricos, voltajes y baterías.";
+        if (tipo === 'Alarma') desc.innerText = "Diagnóstico de evento anómalo y matriz de acciones correctivas.";
+      }
+
+      renderWorkflow();
+    }
+
+    function getEquiposActuales() {
+      const sala = document.getElementById('select-sala').value;
+      const objetivo = document.getElementById('select-ups-objetivo').value;
+      if (objetivo === 'TODA LA SALA' || !objetivo) {
+        return SALAS_EQUIPOS[sala] || [];
+      } else {
+        return [objetivo];
+      }
+    }
+
+    function renderWorkflow() {
+      const container = document.getElementById('workflow-container');
+      if(!container) return;
+      if (currentTipo === 'Alarma') container.innerHTML = renderWorkflowAlarma();
+      else if (currentTipo === 'Diario') container.innerHTML = renderWorkflowDiario();
+      else if (currentTipo === 'Periodico') container.innerHTML = renderWorkflowPeriodico();
+    }
+
+    function renderWorkflowAlarma() {
+      const sala = document.getElementById('select-sala').value;
+      const equipos = SALAS_EQUIPOS[sala] || [];
+      return `
+        <div class="bg-[#111827] rounded-2xl border border-rose-900/50 p-5 shadow-xl">
+          <h2 class="text-rose-400 font-bold text-base mb-4 flex items-center space-x-2 border-b border-rose-900/40 pb-2">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span>Reporte de Alarma / Evento Crítico</span>
+          </h2>
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="block font-bold text-slate-300 uppercase mb-2">UPS Afectada</label>
+              <select id="alarma-ups" class="w-full rounded-xl p-3 text-sm font-semibold border">
+                ${equipos.map(e => `<option value="${e}">${e}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-300 uppercase mb-2">Lectura de los Eventos (N° 4 dígitos -- Evento -- Descripción)</label>
+              <input type="text" id="alarma-eventos" placeholder="Ej: 0104 -- Overload -- Sobrecarga en fase R" class="w-full border rounded-xl p-3 text-sm" required>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-300 uppercase mb-2">Matriz de Acción / Verificación</label>
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                ${['Tensión Entrada', 'Resetear', 'Normal_panel', 'Batería_panel', 'Bypass_panel', 'Fault_panel', 'Apagado', 'Revisar Tablero', 'Revisar Conexiones', 'Revisar ITM_UPS', 'Revisar Componentes', 'Fuera de Servicio'].map(act => `
+                  <label class="flex items-center space-x-2 bg-[#1e293b] border border-slate-700 p-2.5 rounded-xl cursor-pointer hover:bg-slate-800">
+                    <input type="checkbox" name="alarma_acciones" value="${act}" class="rounded text-rose-500 bg-slate-900 border-slate-700">
+                    <span class="text-slate-200">${act}</span>
+                  </label>
+                `).join('')}
+              </div>
+            </div>
+            <div>
+              <label class="block font-bold text-slate-300 uppercase mb-2">Observaciones Complementarias</label>
+              <textarea id="alarma-obs" rows="3" class="w-full border rounded-xl p-3 text-sm" placeholder="Detalles de maniobras realizadas..."></textarea>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderWorkflowDiario() {
+      const equipos = getEquiposActuales();
+      const sala = document.getElementById('select-sala').value;
+      return `
+        <div class="space-y-4">
+          <div class="bg-[#111827] rounded-2xl border border-slate-800 p-4 shadow-xl flex justify-between items-center">
+            <div>
+              <p class="text-xs uppercase font-extrabold text-amber-500 tracking-wider">INSPECCIÓN DIARIA RUTINARIA</p>
+              <p class="text-sm font-bold text-white mt-0.5">${equipos.length === 1 ? equipos[0] : 'RECORRIDO COMPLETO SALA'}</p>
+            </div>
+            <span class="text-xs bg-[#1e293b] text-slate-300 px-3 py-1 rounded-lg border border-slate-700">
+              ${sala}
+            </span>
+          </div>
+
+          ${equipos.map((eq, idx) => `
+            <div class="bg-[#111827] rounded-2xl border border-slate-800 p-5 shadow-xl">
+              <h3 class="font-bold text-amber-400 text-sm border-b border-slate-800 pb-3 mb-4 flex justify-between items-center">
+                <span>ESTADO OPERATIVO DE ${eq}</span>
+                <span class="text-xs font-normal text-slate-500">Unidad ${idx+1} de ${equipos.length}</span>
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mb-4">
+                <div>
+                  <label class="block font-bold text-slate-300 mb-2">Estado Operativo</label>
+                  <select id="diario-estado-${idx}" class="w-full border rounded-xl p-3 font-medium">
+                    <option value="Funcionando">Funcionando</option>
+                    <option value="Fuera de Servicio">Fuera de Servicio</option>
+                    <option value="Error">Error / Anormalidad</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-300 mb-2">Evaluación General</label>
+                  <select id="diario-eval-${idx}" class="w-full border rounded-xl p-3 font-medium">
+                    <option value="Ok">Ok (Sin novedades)</option>
+                    <option value="No Normal">No Normal (Requiere Atención)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="mb-4">
+                <label class="block font-bold text-slate-300 text-xs mb-2">Indicadores Panel LED/LCD</label>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                  ${['Normal', 'Battery', 'Bypass', 'Fault'].map(panel => `
+                    <label class="flex items-center space-x-2 border border-slate-700/80 p-2.5 rounded-xl bg-[#1e293b] justify-center cursor-pointer hover:bg-slate-800">
+                      <input type="checkbox" name="diario_panel_${idx}" value="${panel}" class="rounded text-amber-500 bg-slate-900 border-slate-600">
+                      <span class="text-slate-200">${panel}</span>
+                    </label>
+                  `).join('')}
+                </div>
+              </div>
+              <div>
+                <label class="block font-bold text-slate-300 text-xs mb-2">Observaciones</label>
+                <input type="text" id="diario-obs-${idx}" class="w-full border rounded-xl p-2.5 text-xs" placeholder="Comentarios específicos del equipo...">
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function renderWorkflowPeriodico() {
+      const equipos = getEquiposActuales();
+      const sala = document.getElementById('select-sala').value;
+      return `
+        <div class="space-y-4">
+          <div class="bg-[#111827] rounded-2xl border border-slate-800 p-4 shadow-xl flex justify-between items-center">
+            <div>
+              <p class="text-xs uppercase font-extrabold text-cyan-400 tracking-wider">CONTROL PERIÓDICO - MEDICIONES</p>
+              <p class="text-sm font-bold text-white mt-0.5">${equipos.length === 1 ? equipos[0] : 'RECORRIDO COMPLETO SALA'}</p>
+            </div>
+            <span class="text-xs bg-[#1e293b] text-slate-300 px-3 py-1 rounded-lg border border-slate-700">
+              ${sala}
+            </span>
+          </div>
+
+          ${equipos.map((eq, idx) => `
+            <div class="bg-[#111827] rounded-2xl border border-slate-800 p-5 shadow-xl">
+              <h3 class="font-bold text-cyan-400 text-sm border-b border-slate-800 pb-3 mb-4 flex justify-between items-center">
+                <span>MEDICIONES TÉCNICAS - ${eq}</span>
+                <span class="text-xs font-normal text-slate-500">Unidad ${idx+1} de ${equipos.length}</span>
+              </h3>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs mb-4">
+                <div>
+                  <label class="block font-bold text-slate-300 mb-2">Estado Operativo</label>
+                  <select id="med-${idx}-estado" class="w-full border rounded-xl p-3 font-medium">
+                    <option value="Funcionando">Funcionando</option>
+                    <option value="Fuera de Servicio">Fuera de Servicio</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div><label class="block font-semibold text-slate-400 mb-1">Salida (W)</label><input type="text" id="med-${idx}-salida-w" class="w-full border rounded-xl p-2.5"></div>
+                <div><label class="block font-semibold text-slate-400 mb-1">Salida (VA)</label><input type="text" id="med-${idx}-salida-va" class="w-full border rounded-xl p-2.5"></div>
+                <div><label class="block font-semibold text-slate-400 mb-1">Salida (A)</label><input type="text" id="med-${idx}-salida-a" class="w-full border rounded-xl p-2.5"></div>
+                <div><label class="block font-semibold text-slate-400 mb-1">Salida (%)</label><input type="text" id="med-${idx}-salida-pct" class="w-full border rounded-xl p-2.5"></div>
+                <div><label class="block font-semibold text-slate-400 mb-1">Salida (V)</label><input type="text" id="med-${idx}-salida-v" class="w-full border rounded-xl p-2.5"></div>
+                <div><label class="block font-semibold text-slate-400 mb-1">Entrada (V)</label><input type="text" id="med-${idx}-entrada-v" class="w-full border rounded-xl p-2.5"></div>
+                <div><label class="block font-semibold text-slate-400 mb-1">Entrada (Hz)</label><input type="text" id="med-${idx}-entrada-hz" class="w-full border rounded-xl p-2.5"></div>
+                <div><label class="block font-semibold text-slate-400 mb-1">Batería (V)</label><input type="text" id="med-${idx}-bat-v" class="w-full border rounded-xl p-2.5"></div>
+                <div><label class="block font-semibold text-slate-400 mb-1">Batería (%)</label><input type="text" id="med-${idx}-bat-pct" class="w-full border rounded-xl p-2.5"></div>
+                <div><label class="block font-semibold text-slate-400 mb-1">Bus-DC (V)</label><input type="text" id="med-${idx}-bus-v" class="w-full border rounded-xl p-2.5"></div>
+                <div><label class="block font-semibold text-slate-400 mb-1">Temp (°C)</label><input type="text" id="med-${idx}-temp" class="w-full border rounded-xl p-2.5"></div>
+                <div><label class="block font-semibold text-slate-400 mb-1">Autonomía (min)</label><input type="text" id="med-${idx}-tiempo-min" class="w-full border rounded-xl p-2.5"></div>
+              </div>
+              <div class="mt-4">
+                <label class="block font-semibold text-slate-400 text-xs mb-1">Observaciones</label>
+                <input type="text" id="med-${idx}-obs" class="w-full border rounded-xl p-2.5 text-xs" placeholder="Anotaciones técnicas...">
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    async function enviarInspeccion() {
+      if (operariosSeleccionados.length === 0) {
+        alert('Por favor, seleccione al menos un operario firmante antes de enviar.');
+        toggleModalOperarios();
+        return;
+      }
+
+      const btn = document.getElementById('btn-enviar');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Guardando en Google Sheets...</span>`;
+
+      const now = new Date();
+      const fechaStr = now.toISOString().split('T')[0];
+      const horaStr = now.toTimeString().split(' ')[0].substring(0, 5);
+
+      const sala = document.getElementById('select-sala').value;
+      const objetivo = document.getElementById('select-ups-objetivo').value;
+      const equipos = getEquiposActuales();
+
+      let equipoStr = objetivo === 'TODA LA SALA' ? `TODA LA SALA [${sala}]` : objetivo;
+      let estadoEventosConsolidado = '-';
+      let estadoGeneral = 'Ok';
+      let medicionesConsolidadas = '-';
+      let accionesConsolidadas = '-';
+      let observaciones = '-';
+
+      if (currentTipo === 'Alarma') {
+        const upsAfectada = document.getElementById('alarma-ups').value;
+        const eventos = document.getElementById('alarma-eventos').value || '-';
+        accionesConsolidadas = Array.from(document.querySelectorAll('input[name="alarma_acciones"]:checked')).map(c => c.value).join(', ') || '-';
+        observaciones = document.getElementById('alarma-obs').value || '-';
+
+        equipoStr = upsAfectada;
+        estadoEventosConsolidado = `Evento: ${eventos}`;
+        estadoGeneral = 'Alarma';
+      } 
+      else if (currentTipo === 'Diario') {
+        const resumen = [];
+        equipos.forEach((eq, idx) => {
+          const est = document.getElementById(`diario-estado-${idx}`).value;
+          const evalG = document.getElementById(`diario-eval-${idx}`).value;
+          const obsItem = document.getElementById(`diario-obs-${idx}`).value;
+          if (evalG === 'No Normal' || est === 'Fuera de Servicio') estadoGeneral = 'No Normal';
+          resumen.push(`${eq}: ${est} (${evalG})${obsItem ? ' - ' + obsItem : ''}`);
+        });
+        estadoEventosConsolidado = resumen.join(' | ');
+      } 
+      else if (currentTipo === 'Periodico') {
+        const resumen = [];
+        const resumenMed = [];
+        equipos.forEach((eq, idx) => {
+          const est = document.getElementById(`med-${idx}-estado`).value;
+          const w = document.getElementById(`med-${idx}-salida-w`).value || '-';
+          const v = document.getElementById(`med-${idx}-salida-v`).value || '-';
+          const batV = document.getElementById(`med-${idx}-bat-v`).value || '-';
+          const obs = document.getElementById(`med-${idx}-obs`).value || '-';
+
+          if (est === 'Fuera de Servicio') estadoGeneral = 'No Normal';
+
+          resumenMed.push(`${eq} [${est}]: ${w}W / ${v}V | Bat: ${batV}V ${obs ? ' (' + obs + ')' : ''}`);
+          resumen.push(`${eq}: ${est}`);
+        });
+        estadoEventosConsolidado = resumen.join(' | ');
+        medicionesConsolidadas = resumenMed.join(' || ');
+      }
+
+      const payload = {
+        fecha: String(fechaStr),
+        hora: String(horaStr),
+        sala: String(sala),
+        equipo: String(equipoStr),
+        tipoInspeccion: String(currentTipo),
+        estadoGeneral: String(estadoGeneral),
+        mediciones: String(medicionesConsolidadas),
+        estadoEventos: String(estadoEventosConsolidado),
+        accionVerificacion: String(accionesConsolidadas),
+        observaciones: String(observaciones),
+        operarios: String(operariosSeleccionados.join(', '))
+      };
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        alert('¡Inspección registrada con éxito en la planilla!');
+        renderWorkflow();
+      } catch (err) {
+        alert('Error de conexión al guardar el registro.');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span>Guardar y Registrar Inspección</span>`;
+      }
+    }
+
+    async function cargarHistorial() {
+      const loading = document.getElementById('historial-loading');
+      const lista = document.getElementById('historial-lista');
+      const salaActual = document.getElementById('select-sala').value;
+
+      loading.classList.remove('hidden');
+      lista.innerHTML = '';
+
+      try {
+        const res = await fetch(`${WEBHOOK_URL}?sala=${encodeURIComponent(salaActual)}`);
+        const data = await res.json();
+        loading.classList.add('hidden');
+
+        if (Array.isArray(data) && data.length > 0) {
+          lista.innerHTML = data.map(item => `
+            <div class="border border-slate-800 rounded-2xl p-4 bg-[#182234] text-xs shadow-md relative space-y-1.5">
+              <div class="flex justify-between font-bold text-white border-b border-slate-700/80 pb-2 mb-2 pr-8">
+                <span>${item.fecha || ''} ${item.hora || ''} - ${item.equipo || ''} (${item.tipoInspeccion || ''})</span>
+                <span class="${item.estadoGeneral === 'Alarma' || item.estadoGeneral === 'No Normal' ? 'text-rose-400 font-bold' : 'text-emerald-400 font-bold'}">${item.estadoGeneral || 'Ok'}</span>
+              </div>
+              <p class="text-slate-300"><strong>Eventos/Estado:</strong> ${item.estadoEventos || '-'}</p>
+              <p class="text-slate-300"><strong>Mediciones:</strong> ${item.mediciones || '-'}</p>
+              <p class="text-slate-400"><strong>Acción:</strong> ${item.accionVerificacion || '-'}</p>
+              <p class="text-slate-500 text-[10px] pt-1.5 border-t border-slate-800">Técnicos: ${item.operarios || '-'}</p>
+              
+              <button onclick="eliminarRegistro(${item.filaIndex}, '${item.sala}')" class="absolute top-4 right-4 text-rose-400 hover:text-rose-300 p-1" title="Eliminar registro">
+                <i class="fa-solid fa-trash-can text-sm"></i>
+              </button>
+            </div>
+          `).join('');
+        } else {
+          lista.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">No hay registros almacenados para esta sala.</p>`;
+        }
+      } catch (e) {
+        loading.classList.add('hidden');
+        lista.innerHTML = `<p class="text-xs text-rose-400 text-center py-6">Error al cargar el historial desde el servidor.</p>`;
+      }
+    }
+
+    async function eliminarRegistro(filaIndex, sala) {
+      const clave = prompt("Ingrese la contraseña de administrador para eliminar:");
+      if (!clave) return;
+
+      if (clave !== "admin123") {
+        alert("Contraseña incorrecta.");
+        return;
+      }
+
+      if (confirm("¿Desea eliminar permanentemente este registro de Google Sheets?")) {
+        try {
+          await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              accion: "ELIMINAR",
+              clave: clave,
+              filaIndex: filaIndex,
+              sala: sala
+            })
+          });
+          alert("Solicitud de eliminación enviada.");
+          setTimeout(cargarHistorial, 1500);
+        } catch (err) {
+          alert("Error de conexión al intentar eliminar.");
+        }
+      }
+    }
+  </script>
+</body>
+</html>

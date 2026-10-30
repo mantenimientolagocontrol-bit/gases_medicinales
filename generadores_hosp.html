@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Generadores HLH - Control y Registro Técnico</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #0b0f19; color: #e2e8f0; }
+    .tab-active { background-color: #f59e0b !important; color: #000000 !important; font-weight: 700; }
+    select, input, textarea { background-color: #1e293b !important; color: #f8fafc !important; border-color: #334155 !important; }
+    select:focus, input:focus, textarea:focus { border-color: #f59e0b !important; outline: none; }
+  </style>
+</head>
+<body class="min-h-screen font-sans pb-12 selection:bg-amber-500 selection:text-black">
+
+  <!-- HEADER -->
+  <header class="bg-[#0f172a] border-b border-slate-800 sticky top-0 z-50 shadow-lg">
+    <div class="max-w-6xl mx-auto px-3 py-2.5 flex justify-between items-center">
+      <div class="flex items-center space-x-2.5">
+        <div class="bg-amber-500/20 p-2 rounded-xl border border-amber-500/30">
+          <i class="fa-solid fa-bolt text-amber-500 text-lg"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-sm sm:text-lg leading-none tracking-wide text-white uppercase">GENERADORES HLH</h1>
+          <p class="text-[9px] sm:text-[10px] text-slate-400 font-semibold tracking-wider uppercase mt-0.5">G#1 & G#2 Perkins • G#3 Cat C32</p>
+        </div>
+      </div>
+
+      <nav class="hidden md:flex bg-[#1e293b] p-1 rounded-xl border border-slate-700/60 space-x-1">
+        <button id="tab-btn-nuevo" onclick="switchTab('nuevo')" class="py-1.5 px-4 rounded-lg flex items-center space-x-2 text-xs font-semibold tab-active transition-all">
+          <i class="fa-solid fa-plus-circle"></i><span>Nuevo Registro</span>
+        </button>
+        <button id="tab-btn-historial" onclick="switchTab('historial')" class="py-1.5 px-4 rounded-lg flex items-center space-x-2 text-xs font-semibold text-slate-300 hover:text-white transition-all">
+          <i class="fa-solid fa-clock-rotate-left"></i><span>Historial</span>
+        </button>
+      </nav>
+
+      <button onclick="toggleModalOperarios()" class="bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-400 text-[11px] sm:text-xs px-2.5 py-2 rounded-xl border border-emerald-700/50 font-medium flex items-center space-x-1.5 transition-all">
+        <i class="fa-solid fa-user-check"></i>
+        <span id="header-op-count">Operarios</span>
+      </button>
+    </div>
+
+    <!-- Barra de navegación móvil inferior para pestañas -->
+    <div class="flex md:hidden bg-[#1e293b] border-t border-slate-800 p-1">
+      <button id="tab-mob-nuevo" onclick="switchTab('nuevo')" class="flex-1 py-2 text-center text-xs font-semibold tab-active rounded-lg transition-all">
+        <i class="fa-solid fa-plus-circle mr-1"></i> Nuevo Registro
+      </button>
+      <button id="tab-mob-historial" onclick="switchTab('historial')" class="flex-1 py-2 text-center text-xs font-semibold text-slate-300 rounded-lg transition-all">
+        <i class="fa-solid fa-clock-rotate-left mr-1"></i> Historial
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-3 sm:px-4 mt-4 sm:mt-6">
+
+    <!-- ================= TAB NUEVO REGISTRO ================= -->
+    <section id="tab-nuevo" class="block space-y-4 sm:space-y-6">
+
+      <!-- TARJETAS DE ESTADO -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+        <div class="bg-[#111827] border border-slate-800 rounded-xl px-3.5 py-2.5 shadow-md flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold font-mono px-2 py-1 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30">G#1</span>
+            <div><h3 class="text-xs sm:text-sm font-bold text-white">Perkins 1505 kVA</h3><p class="text-[10px] text-slate-400">Principal A</p></div>
+          </div>
+          <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Operativo
+          </span>
+        </div>
+
+        <div class="bg-[#111827] border border-slate-800 rounded-xl px-3.5 py-2.5 shadow-md flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold font-mono px-2 py-1 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30">G#2</span>
+            <div><h3 class="text-xs sm:text-sm font-bold text-white">Perkins 1505 kVA</h3><p class="text-[10px] text-slate-400">Principal B</p></div>
+          </div>
+          <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Operativo
+          </span>
+        </div>
+
+        <div class="bg-[#111827] border border-slate-800 rounded-xl px-3.5 py-2.5 shadow-md flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold font-mono px-2 py-1 rounded bg-yellow-500/15 text-yellow-400 border border-yellow-500/30">G#3</span>
+            <div><h3 class="text-xs sm:text-sm font-bold text-white">Cat C32 1600 kVA</h3><p class="text-[10px] text-slate-400">Emergencia / Refuerzo</p></div>
+          </div>
+          <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Operativo
+          </span>
+        </div>
+      </div>
+
+      <!-- SELECTOR DE EQUIPO Y FUNCIÓN -->
+      <div class="bg-[#111827] rounded-2xl border border-slate-800 p-4 sm:p-5 shadow-xl space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-3 gap-2">
+          <h2 class="text-white font-bold text-sm sm:text-base flex items-center space-x-2">
+            <i class="fa-solid fa-sliders text-amber-500"></i>
+            <span>Selección de Equipo y Función</span>
+          </h2>
+          <span id="live-clock" class="text-[11px] bg-[#1e293b] text-slate-300 px-2.5 py-1 rounded-lg font-mono border border-slate-700">--/--/---- --:--:--</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">1. GENERADOR A INTERVENIR</label>
+            <select id="select-gen" class="w-full text-xs sm:text-sm rounded-xl p-2.5 sm:p-3 font-semibold border">
+              <option value="G1">G#1 - Perkins 1505 kVA</option>
+              <option value="G2">G#2 - Perkins 1505 kVA</option>
+              <option value="G3">G#3 - Caterpillar C32 1600 kVA</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">2. FUNCIÓN TÉCNICA</label>
+            <select id="select-func" onchange="renderFormWorkflow()" class="w-full text-xs sm:text-sm rounded-xl p-2.5 sm:p-3 font-semibold border">
+              <option value="Prueba Programada">Prueba Programada (Punto 1)</option>
+              <option value="Corte de Red">Corte de Red (Punto 1)</option>
+              <option value="Control">Control Rutinario (Punto 2)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Barra Operarios -->
+        <div class="pt-3 border-t border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-[#182234] p-3 sm:p-4 rounded-xl border border-slate-700/60 gap-3">
+          <div>
+            <span class="text-xs font-bold text-slate-300 block mb-1">Operarios firmantes:</span>
+            <div id="chips-operarios" class="flex flex-wrap gap-1.5">
+              <span class="text-xs text-amber-500 font-medium">⚠️ Debe seleccionar al menos un operario</span>
+            </div>
+          </div>
+          <button type="button" onclick="toggleModalOperarios()" class="bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-lg transition-all shrink-0 w-full sm:w-auto">
+            Modificar Operarios
+          </button>
+        </div>
+      </div>
+
+      <!-- WORKFLOW DINÁMICO -->
+      <div id="workflow-form-container"></div>
+
+    </section>
+
+    <!-- ================= TAB HISTORIAL ================= -->
+    <section id="tab-historial" class="hidden">
+      <div class="bg-[#111827] rounded-2xl border border-slate-800 p-4 sm:p-5 shadow-xl space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+          <h2 class="text-white font-bold text-sm sm:text-base flex items-center space-x-2">
+            <i class="fa-solid fa-list-check text-amber-500"></i>
+            <span>Historial de Registros</span>
+          </h2>
+          <button onclick="cargarHistorial()" class="text-xs bg-[#1e293b] hover:bg-slate-700 text-slate-200 py-1.5 px-3 rounded-lg border border-slate-700 flex items-center space-x-1">
+            <i class="fa-solid fa-arrows-rotate"></i><span>Actualizar</span>
+          </button>
+        </div>
+        <div id="historial-loading" class="text-center py-8 text-slate-500">
+          <i class="fa-solid fa-spinner fa-spin text-2xl mb-2 text-amber-500"></i>
+          <p class="text-xs">Cargando registros sincronizados...</p>
+        </div>
+        <div id="historial-lista" class="space-y-3"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL SELECCIÓN OPERARIOS -->
+  <div id="modal-operarios" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-[#111827] rounded-2xl border border-slate-800 shadow-2xl max-w-md w-full p-4 sm:p-5 space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-white text-sm sm:text-base flex items-center space-x-2">
+          <i class="fa-solid fa-users text-amber-500"></i>
+          <span>Seleccionar Personal Técnico (HLH)</span>
+        </h3>
+        <button onclick="toggleModalOperarios()" class="text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs max-h-60 overflow-y-auto p-1" id="container-modal-operarios"></div>
+      <div class="pt-3 border-t border-slate-800 flex justify-end">
+        <button onclick="toggleModalOperarios()" class="bg-amber-500 hover:bg-amber-400 text-black font-extrabold py-2 px-5 rounded-xl text-xs shadow-lg">Aceptar Selección</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyWygax70GL27qO-FS3LtWI68V4KhDcCVl3Szd3jvJiY_MDm_utvTdn2kYcqayPiD-_/exec';
+
+    const OFFICIAL_OPERATORS = [
+      "Murillo José Luis", "Novicov Federico", "Cabañas Gustavo",
+      "Condorí Lucas", "Bejarano Diego", "Landa Alejandro",
+      "Gimenez Andres", "Fernandes Yair", "Sinatra Matías",
+      "Olmedo Orlando", "Soria Carlos", "Masman Diego"
+    ];
+
+    let operariosSeleccionados = [];
+
+    window.onload = function() {
+      startClock();
+      renderOperariosModal();
+      renderFormWorkflow();
+    };
+
+    function startClock() {
+      setInterval(() => {
+        const now = new Date();
+        document.getElementById('live-clock').innerText = now.toLocaleString('es-ES');
+      }, 1000);
+    }
+
+    function switchTab(tab) {
+      document.getElementById('tab-nuevo').classList.toggle('hidden', tab !== 'nuevo');
+      document.getElementById('tab-historial').classList.toggle('hidden', tab !== 'historial');
+      
+      // Actualizar botones escritorio
+      document.getElementById('tab-btn-nuevo').className = tab === 'nuevo' ? 'py-1.5 px-4 rounded-lg flex items-center space-x-2 text-xs font-semibold tab-active transition-all' : 'py-1.5 px-4 rounded-lg flex items-center space-x-2 text-xs font-semibold text-slate-300 hover:text-white transition-all';
+      document.getElementById('tab-btn-historial').className = tab === 'historial' ? 'py-1.5 px-4 rounded-lg flex items-center space-x-2 text-xs font-semibold tab-active transition-all' : 'py-1.5 px-4 rounded-lg flex items-center space-x-2 text-xs font-semibold text-slate-300 hover:text-white transition-all';
+      
+      // Actualizar botones móvil
+      document.getElementById('tab-mob-nuevo').className = tab === 'nuevo' ? 'flex-1 py-2 text-center text-xs font-semibold tab-active rounded-lg transition-all' : 'flex-1 py-2 text-center text-xs font-semibold text-slate-300 rounded-lg transition-all';
+      document.getElementById('tab-mob-historial').className = tab === 'historial' ? 'flex-1 py-2 text-center text-xs font-semibold tab-active rounded-lg transition-all' : 'flex-1 py-2 text-center text-xs font-semibold text-slate-300 rounded-lg transition-all';
+
+      if (tab === 'historial') cargarHistorial();
+    }
+
+    function toggleModalOperarios() {
+      document.getElementById('modal-operarios').classList.toggle('hidden');
+    }
+
+    function renderOperariosModal() {
+      const container = document.getElementById('container-modal-operarios');
+      if (!container) return;
+      container.innerHTML = OFFICIAL_OPERATORS.map((op, idx) => `
+        <label class="flex items-center space-x-2 bg-[#1e293b] border border-slate-700/60 p-2.5 rounded-xl cursor-pointer hover:bg-slate-700 transition-colors select-none">
+          <input type="checkbox" value="${op}" onchange="onOperarioChange()" class="w-4 h-4 text-amber-500 rounded bg-slate-900 border-slate-600 cursor-pointer">
+          <span class="truncate text-slate-200 font-medium text-xs">${op}</span>
+        </label>
+      `).join('');
+    }
+
+    function onOperarioChange() {
+      operariosSeleccionados = Array.from(document.querySelectorAll('#container-modal-operarios input[type="checkbox"]:checked')).map(cb => cb.value);
+      const chips = document.getElementById('chips-operarios');
+      const headerCount = document.getElementById('header-op-count');
+
+      if (operariosSeleccionados.length === 0) {
+        chips.innerHTML = `<span class="text-xs text-amber-500 font-medium">⚠️ Debe seleccionar al menos un operario</span>`;
+        headerCount.innerText = "Operarios";
+      } else {
+        chips.innerHTML = operariosSeleccionados.map(op => `<span class="bg-[#111827] border border-slate-700 text-slate-200 text-xs px-2 py-0.5 rounded-lg">${op}</span>`).join('');
+        headerCount.innerText = `Operarios (${operariosSeleccionados.length})`;
+      }
+    }
+
+    function renderFormWorkflow() {
+      const func = document.getElementById('select-func').value;
+      const container = document.getElementById('workflow-form-container');
+      if (!container) return;
+
+      const today = new Date().toISOString().slice(0, 10);
+      const currentTime = new Date().toTimeString().slice(0, 5);
+
+      if (func === 'Control') {
+        container.innerHTML = `
+          <div class="bg-[#111827] rounded-2xl border border-slate-800 p-4 sm:p-6 shadow-xl space-y-4">
+            <h3 class="font-bold text-sky-400 text-sm border-b border-slate-800 pb-3 flex items-center gap-2">
+              <i class="fa-solid fa-shield-check"></i> Punto 2 - Control Rutinario y Flotación
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div><label class="block font-bold text-slate-300 mb-1">Fecha</label><input type="date" id="p2-fecha" value="${today}" class="w-full border rounded-xl p-2.5 font-mono"></div>
+              <div><label class="block font-bold text-slate-300 mb-1">Hora</label><input type="time" id="p2-hora" value="${currentTime}" class="w-full border rounded-xl p-2.5 font-mono"></div>
+              <div><label class="block font-bold text-slate-300 mb-1">Estado Selector</label>
+                <select id="p2-estado" class="w-full border rounded-xl p-2.5">
+                  <option value="Automático">Automático</option>
+                  <option value="Run">Run</option>
+                  <option value="Stop">Stop</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-1">
+              <div><label class="block font-bold text-slate-300 mb-1">Voltaje Batería (V)</label><input type="text" id="p2-bat" placeholder="Ej: 27.2 V" class="w-full border rounded-xl p-2.5 font-mono"></div>
+              <div><label class="block font-bold text-slate-300 mb-1">Temperatura Motor (°C)</label><input type="text" id="p2-temp" placeholder="Ej: 42 °C" class="w-full border rounded-xl p-2.5 font-mono"></div>
+              <div><label class="block font-bold text-slate-300 mb-1">Nivel Combustible (%)</label><input type="text" id="p2-comb" placeholder="Ej: 95%" class="w-full border rounded-xl p-2.5 font-mono"></div>
+            </div>
+            <div class="pt-1">
+              <label class="block font-bold text-slate-300 mb-1 text-xs">Observaciones / Novedades</label>
+              <textarea id="p2-obs" rows="2" placeholder="Cargador en régimen de flotación..." class="w-full border rounded-xl p-2.5 text-xs"></textarea>
+            </div>
+            <div class="pt-3 border-t border-slate-800 flex justify-end">
+              <button type="button" id="btn-enviar-ctrl" onclick="guardarRegistro()" class="w-full sm:w-auto px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs sm:text-sm transition shadow-xl flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-check-circle"></i><span>Finalizar y Guardar Control</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <div class="space-y-4 sm:space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-white flex items-center gap-2">
+                  <i class="fa-solid fa-clock text-amber-400"></i> Datos Generales
+                </h4>
+                <span class="text-[11px] text-amber-400 font-semibold">* Requeridos</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                <div><label class="font-semibold text-slate-300 block mb-1">* Fecha</label><input type="date" id="p1-fecha" value="${today}" class="w-full border rounded-xl p-2.5 font-mono"></div>
+                <div><label class="font-semibold text-slate-300 block mb-1">* Hora Inicio</label><input type="time" id="p1-horainicio" value="${currentTime}" class="w-full border rounded-xl p-2.5 font-mono"></div>
+                <div><label class="font-semibold text-slate-300 block mb-1">* Estado</label>
+                  <select id="p1-estado" class="w-full border rounded-xl p-2.5 font-medium">
+                    <option value="Funcionando">Funcionando</option>
+                    <option value="Fuera de Servicio">Fuera de Servicio</option>
+                    <option value="Standby">Standby</option>
+                    <option value="Falla de Arranque">Falla de Arranque</option>
+                  </select>
+                </div>
+                <div><label class="font-semibold text-slate-300 block mb-1">* Hora Final</label><input type="time" id="p1-horafinal" value="${currentTime}" class="w-full border rounded-xl p-2.5 font-mono"></div>
+              </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4">
+              <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h4 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-white flex items-center gap-2">
+                  <i class="fa-solid fa-gauge text-amber-400"></i> Datos de Display
+                </h4>
+                <span class="text-[11px] text-slate-400">Deep Sea / PowerWizard</span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                <div><label class="font-semibold text-slate-300 block mb-1">Hora Lectura</label><input type="time" id="disp-hora" value="${currentTime}" class="w-full border rounded-xl p-2.5 font-mono"></div>
+                <div><label class="font-semibold text-slate-300 block mb-1">Voltaje Batería (V)</label><input type="text" id="disp-bat" placeholder="27.0" class="w-full border rounded-xl p-2.5 font-mono"></div>
+                <div><label class="font-semibold text-slate-300 block mb-1">Temp. Motor (°C)</label><input type="text" id="disp-temp" placeholder="80" class="w-full border rounded-xl p-2.5 font-mono"></div>
+                <div><label class="font-semibold text-slate-300 block mb-1">Nivel Combustible (%)</label><input type="text" id="disp-comb" placeholder="90" class="w-full border rounded-xl p-2.5 font-mono"></div>
+              </div>
+
+              <div class="bg-slate-850/80 rounded-xl p-3 sm:p-4 border border-slate-800 space-y-3 text-xs">
+                <h5 class="font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+                  <i class="fa-solid fa-bolt text-amber-400"></i> Voltaje y Frecuencia
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div class="p-3 bg-slate-800 rounded-xl border border-slate-700 space-y-2">
+                    <span class="font-semibold text-amber-300 block">Voltaje Línea - Línea (LL) en V</span>
+                    <div class="grid grid-cols-3 gap-1.5">
+                      <div><span class="text-[10px] text-slate-400">L1-L2</span><input type="text" id="v-l12" placeholder="400" class="w-full border rounded p-1 font-mono"></div>
+                      <div><span class="text-[10px] text-slate-400">L2-L3</span><input type="text" id="v-l23" placeholder="400" class="w-full border rounded p-1 font-mono"></div>
+                      <div><span class="text-[10px] text-slate-400">L3-L1</span><input type="text" id="v-l31" placeholder="400" class="w-full border rounded p-1 font-mono"></div>
+                    </div>
+                  </div>
+                  <div class="p-3 bg-slate-800 rounded-xl border border-slate-700 space-y-2">
+                    <span class="font-semibold text-amber-300 block">Voltaje Línea - Neutro (LN) en V</span>
+                    <div class="grid grid-cols-3 gap-1.5">
+                      <div><span class="text-[10px] text-slate-400">L1-N</span><input type="text" id="v-l1n" placeholder="230" class="w-full border rounded p-1 font-mono"></div>
+                      <div><span class="text-[10px] text-slate-400">L2-N</span><input type="text" id="v-l2n" placeholder="230" class="w-full border rounded p-1 font-mono"></div>
+                      <div><span class="text-[10px] text-slate-400">L3-N</span><input type="text" id="v-l3n" placeholder="230" class="w-full border rounded p-1 font-mono"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center justify-between bg-slate-800/50 p-2.5 rounded-lg">
+                  <span class="font-medium text-slate-300">Frecuencia Medida:</span>
+                  <div class="flex items-center gap-1.5"><input type="text" id="freq-hz" placeholder="50.0" class="w-20 border rounded p-1 font-mono"><span class="font-bold text-slate-400">Hz</span></div>
+                </div>
+              </div>
+
+              <div class="rounded-xl p-3 sm:p-4 border border-slate-800 space-y-3 text-xs bg-slate-850">
+                <h5 class="font-bold uppercase tracking-wider text-slate-200">Potencia Total</h5>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div><label class="font-medium text-slate-300 block mb-1">Potencia Activa (KW)</label><input type="text" id="pow-kw" placeholder="ej. 800" class="w-full border rounded-xl p-2.5 font-mono"></div>
+                  <div><label class="font-medium text-slate-300 block mb-1">Potencia Aparente (KVA)</label><input type="text" id="pow-kva" placeholder="ej. 1000" class="w-full border rounded-xl p-2.5 font-mono"></div>
+                </div>
+              </div>
+
+              <div>
+                <label class="font-medium text-slate-400 block mb-1 text-xs">Observaciones de la toma</label>
+                <textarea id="disp-obs" rows="2" placeholder="Comentarios sobre ruido o comportamiento..." class="w-full border rounded-xl p-2.5 text-xs"></textarea>
+              </div>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl flex justify-end">
+              <button type="button" id="btn-enviar" onclick="guardarRegistro()" class="w-full sm:w-auto px-6 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black rounded-xl text-xs sm:text-sm transition shadow-xl flex items-center justify-center gap-2 cursor-pointer">
+                <i class="fa-solid fa-check-circle"></i><span>Finalizar y Guardar Registro</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function limpiarFormulario() {
+      const inputs = document.querySelectorAll('input[type="text"], textarea');
+      inputs.forEach(input => input.value = '');
+    }
+
+    async function guardarRegistro() {
+      if (operariosSeleccionados.length === 0) {
+        alert('Por favor, seleccione al menos un operario firmante antes de guardar.');
+        toggleModalOperarios();
+        return;
+      }
+
+      const btn = document.getElementById('btn-enviar') || document.getElementById('btn-enviar-ctrl');
+      if(btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span>Sincronizando con Google Sheets...</span>`;
+      }
+
+      const genId = document.getElementById('select-gen').value;
+      const func = document.getElementById('select-func').value;
+      const genName = genId === 'G1' ? 'G#1' : genId === 'G2' ? 'G#2' : 'G#3';
+      const genModel = genId === 'G3' ? 'Cat C32 1600 kVA' : 'Perkins 1505 kVA';
+
+      let fecha = '', hora = '', estado = '', mediciones = '', observaciones = '';
+
+      if (func === 'Control') {
+        fecha = document.getElementById('p2-fecha').value;
+        hora = document.getElementById('p2-hora').value;
+        estado = document.getElementById('p2-estado').value;
+        const bat = document.getElementById('p2-bat').value || '24V';
+        const temp = document.getElementById('p2-temp').value || '60°C';
+        const comb = document.getElementById('p2-comb').value || '100%';
+        observaciones = document.getElementById('p2-obs').value || '-';
+        mediciones = `Bat: ${bat} | Temp: ${temp} | Comb: ${comb}`;
+      } else {
+        fecha = document.getElementById('p1-fecha').value;
+        hora = document.getElementById('p1-horainicio').value;
+        estado = document.getElementById('p1-estado').value;
+        
+        const bat = document.getElementById('disp-bat').value || '-';
+        const temp = document.getElementById('disp-temp').value || '-';
+        const comb = document.getElementById('disp-comb').value || '-';
+        
+        const vL12 = document.getElementById('v-l12').value || '-';
+        const vL23 = document.getElementById('v-l23').value || '-';
+        const vL31 = document.getElementById('v-l31').value || '-';
+        const vL1N = document.getElementById('v-l1n').value || '-';
+        const vL2N = document.getElementById('v-l2n').value || '-';
+        const vL3N = document.getElementById('v-l3n').value || '-';
+        const hz = document.getElementById('freq-hz').value || '-';
+        
+        const kw = document.getElementById('pow-kw').value || '-';
+        const kva = document.getElementById('pow-kva').value || '-';
+        
+        mediciones = `Bat: ${bat}V | Temp: ${temp}°C | Comb: ${comb}% | LL(${vL12}-${vL23}-${vL31}V) | LN(${vL1N}-${vL2N}-${vL3N}V) | Freq: ${hz}Hz | Pot: ${kw}kW / ${kva}kVA`;
+        observaciones = document.getElementById('disp-obs').value || 'Prueba técnica registrada';
+      }
+
+      const payload = {
+        fecha: String(fecha),
+        hora: String(hora),
+        sala: String("Generadores HLH"),
+        equipo: String(`${genName} - ${genModel}`),
+        tipoInspeccion: String(func),
+        estadoGeneral: String(estado),
+        mediciones: String(mediciones),
+        estadoEventos: String(`Función: ${func} - Estado: ${estado}`),
+        accionVerificacion: String("Registro Técnico HLH"),
+        observaciones: String(observaciones),
+        operarios: String(operariosSeleccionados.join(', '))
+      };
+
+      try {
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        alert('¡Intervención registrada y sincronizada con éxito en Google Sheets!');
+        limpiarFormulario();
+        switchTab('historial');
+      } catch (err) {
+        alert('Error al conectar con la base de Google Sheets.');
+      } finally {
+        if(btn) {
+          btn.disabled = false;
+          btn.innerHTML = `<i class="fa-solid fa-check-circle"></i><span>Finalizar y Guardar Registro</span>`;
+        }
+      }
+    }
+
+    async function cargarHistorial() {
+      const loading = document.getElementById('historial-loading');
+      const lista = document.getElementById('historial-lista');
+      loading.classList.remove('hidden');
+      lista.innerHTML = '';
+
+      try {
+        const res = await fetch(`${WEBHOOK_URL}?sala=${encodeURIComponent("Generadores HLH")}`);
+        const data = await res.json();
+        loading.classList.add('hidden');
+
+        if (Array.isArray(data) && data.length > 0) {
+          lista.innerHTML = data.map(item => `
+            <div class="border border-slate-800 rounded-2xl p-3.5 bg-[#182234] text-xs shadow-md relative space-y-1.5">
+              <div class="flex flex-col sm:flex-row justify-between font-bold text-white border-b border-slate-700/80 pb-2 mb-2 gap-1">
+                <span>${item.fecha || ''} ${item.hora || ''} - ${item.equipo || ''} (${item.tipoInspeccion || ''})</span>
+                <span class="text-emerald-400 font-bold">${item.estadoGeneral || 'Ok'}</span>
+              </div>
+              <p class="text-slate-300"><strong>Mediciones:</strong> ${item.mediciones || '-'}</p>
+              <p class="text-slate-400"><strong>Observaciones:</strong> ${item.observaciones || '-'}</p>
+              <p class="text-slate-500 text-[10px] pt-1.5 border-t border-slate-800">Técnicos: ${item.operarios || '-'}</p>
+            </div>
+          `).join('');
+        } else {
+          lista.innerHTML = `<p class="text-xs text-slate-500 text-center py-6">No hay registros almacenados todavía.</p>`;
+        }
+      } catch (e) {
+        loading.classList.add('hidden');
+        lista.innerHTML = `<p class="text-xs text-rose-400 text-center py-6">Error al cargar el historial del servidor.</p>`;
+      }
+    }
+  </script>
+</body>
+</html>

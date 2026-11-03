@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sistema de Inspección de Ascensores - Control Clínico</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- React & ReactDOM (UMD Production) -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel Standalone para JSX en el navegador -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; font-size: 11px !important; }
+      .print-page { break-after: page; }
+      .shadow-sm, .shadow-md, .shadow-lg, .shadow-xl { box-shadow: none !important; }
+      .border { border-color: #cbd5e1 !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 min-h-screen font-sans transition-colors duration-200">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // ====================================================================
+    // 1. CONFIGURACIÓN, DATOS MAESTROS Y CONSTANTES
+    // ====================================================================
+
+    const GOOGLE_APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxU-CG0dziv7xw5BUc8iwbOgi40jpiZ1uQWZzVigeP1jjgZGSvCJvmg7LI4D01tXWRI/exec";
+
+    const OPERARIOS_LIST = [
+      "Murillo José Luis",
+      "Novicov Federico",
+      "Cabañas Gustavo",
+      "Condorí Lucas",
+      "Bejarano Diego",
+      "Landa Alejandro",
+      "Gimenez Andres",
+      "Fernandes Yair",
+      "Sinatra Matías",
+      "Olmedo Orlando",
+      "Soria Carlos",
+      "Masman Diego"
+    ];
+
+    const ELEVATORS = [
+      { id: 1, code: "#01", name: "Consultorio #1 (Izq)", locationGroup: "Consultorios", pisos: ["P.B.", "E.P.", "1°P", "2°P", "3°P"] },
+      { id: 2, code: "#02", name: "Consultorio #2 (Der)", locationGroup: "Consultorios", pisos: ["P.B.", "E.P.", "1°P", "2°P", "3°P"] },
+      { id: 3, code: "#03", name: "Portería #3 (Izq)", locationGroup: "Portería", pisos: ["P.B.", "1°P", "2°P", "3°P"] },
+      { id: 4, code: "#04", name: "Portería #4 (Der)", locationGroup: "Portería", pisos: ["S.S.", "P.B.", "1°P", "2°P", "3°P"] },
+      { id: 5, code: "#05", name: "Quirófano #5 (Izq)", locationGroup: "Quirófano", pisos: ["P.B.", "1°P", "2°P"] },
+      { id: 6, code: "#06", name: "Quirófano #6 (Der)", locationGroup: "Quirófano", pisos: ["P.B.", "1°P", "2°P"] },
+      { id: 7, code: "#07", name: "Internación Clínica Médica #7", locationGroup: "Internación", pisos: ["1°P", "2°P", "3°P"] },
+      { id: 8, code: "#08", name: "Montacarga Clínica #8", locationGroup: "Montacargas", pisos: ["S.S.", "P.B.", "1°P", "2°P", "3°P"] },
+      { id: 9, code: "#09", name: "Laboratorio #9", locationGroup: "Laboratorio", pisos: ["P.B.", "1°P"] },
+      { id: 10, code: "#10", name: "Camillero #10 (Izq)", locationGroup: "Camilleros", pisos: ["S.S.", "P.B.", "1°P", "2°P", "3°P"] },
+      { id: 11, code: "#11", name: "Camillero #11 (Der)", locationGroup: "Camilleros", pisos: ["S.S.", "P.B.", "1°P", "2°P", "3°P"] },
+      { id: 12, code: "#12", name: "Público #12 (Izq)", locationGroup: "Público", pisos: ["S.S.", "P.B.", "1°P", "2°P", "3°P"] },
+      { id: 13, code: "#13", name: "Público #13 (Der)", locationGroup: "Público", pisos: ["S.S.", "P.B.", "1°P", "2°P", "3°P"] },
+      { id: 14, code: "#14", name: "Montacarga Servicio #14", locationGroup: "Montacargas", pisos: ["S.S.", "P.B.", "1°P", "2°P", "3°P"] },
+      { id: 15, code: "#15", name: "Personal Neo #15", locationGroup: "Especiales", pisos: ["S.S.", "P.B.", "1°P", "2°P", "3°P"] },
+      { id: 16, code: "#16", name: "Montaremedios #16", locationGroup: "Especiales", pisos: ["S.S.", "P.B.", "1°P", "2°P", "3°P"] }
+    ];
+
+    function getNowFormatted() {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function formatDisplayDate(isoString) {
+      if (!isoString) return "-";
+      try {
+        const d = new Date(isoString);
+        return d.toLocaleString("es-AR", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+      } catch (e) {
+        return isoString;
+      }
+    }
+
+    // ====================================================================
+    // 2. SERVICIO DE ALMACENAMIENTO LOCAL Y TRANSMISIÓN A GOOGLE SHEETS
+    // ====================================================================
+
+    const StorageService = {
+      KEY: "ascensores_inspecciones_v1",
+      getInspections: () => {
+        try {
+          const raw = localStorage.getItem(StorageService.KEY);
+          return raw ? JSON.parse(raw) : [];
+        } catch (e) {
+          console.error(e);
+          return [];
+        }
+      },
+      saveInspection: (report) => {
+        const current = StorageService.getInspections();
+        const existingIdx = current.findIndex(i => i.id === report.id);
+        if (existingIdx >= 0) {
+          current[existingIdx] = report;
+        } else {
+          current.unshift(report);
+        }
+        localStorage.setItem(StorageService.KEY, JSON.stringify(current));
+      },
+      deleteInspection: (id) => {
+        const current = StorageService.getInspections().filter(i => i.id !== id);
+        localStorage.setItem(StorageService.KEY, JSON.stringify(current));
+      }
+    };
+
+    async function sendToGoogleSheets(report) {
+      const payload = {
+        id: report.id,
+        tipo: report.type === 'SIMPLE' ? 'Control Simple' : 'Control Completo',
+        fechaHoraRegistro: report.fechaHora,
+        fechaHoraRegistroFormato: formatDisplayDate(report.fechaHora),
+        operarios: report.operarios,
+        operariosTexto: report.operarios.join(", "),
+        observacionesGenerales: report.generalNotes || "",
+        items: report.items.map(item => {
+          const elv = ELEVATORS.find(e => e.id === item.elevatorId);
+          return {
+            ascensorId: item.elevatorId,
+            codigo: elv ? elv.code : `#${item.elevatorId}`,
+            nombre: elv ? elv.name : `Ascensor #${item.elevatorId}`,
+            pisos: elv ? elv.pisos.join(" - ") : "",
+            fechaHora: formatDisplayDate(item.fechaHora || report.fechaHora),
+            funciona: item.funciona ? "SI" : "NO",
+            motivoNoFunciona: item.funciona ? "" : (item.motivoNoFunciona || "Fuera de Servicio"),
+            observaciones: item.observaciones || "",
+            luzCabina: item.luzCabina || "",
+            andar: item.andar || "",
+            frenado: item.frenado || "",
+            puertaInterna: item.puertaInterna ? "CORRECTO" : "DEFICIENTE / REVISAR",
+            pisosDetalle: item.pisosDetalle ? Object.entries(item.pisosDetalle).map(([p, ok]) => `${p}: ${ok ? 'OK' : 'FALLA'}`).join(" | ") : ""
+          };
+        })
+      };
+
+      try {
+        // Envío directo HTTP POST hacia Google Apps Script (modo no-cors para bypass de CORS del navegador)
+        await fetch(GOOGLE_APPS_SCRIPT_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: {
+            "Content-Type": "text/plain;charset=utf-8"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        return { success: true, message: "Enviado a Google Apps Script correctamente." };
+      } catch (err) {
+        console.error("Error al enviar a Google Sheets:", err);
+        return { success: false, message: err.message || "Error al conectar con la Web App de Google." };
+      }
+    }
+
+    // ====================================================================
+    // 3. COMPONENTE: MODAL DE DIAGNÓSTICO Y CÓDIGO APPS SCRIPT
+    // ====================================================================
+
+    function GoogleSheetsModal({ onClose }) {
+      const [copied, setCopied] = useState(false);
+
+      const codeGS = `// ====================================================================
+// SCRIPT RECEPTOR PARA CONTROL SIMPLE Y COMPLETO DE ASCENSORES
+// Copiar y pegar en: Extensiones > Apps Script > Code.gs
+// ====================================================================
+
+function doPost(e) {
+  try {
+    var raw = e.postData.contents;
+    var data = JSON.parse(raw);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    var sheetName = data.tipo === 'Control Simple' ? 'Control Simple' : 'Control Completo';
+    var sheet = ss.getSheetByName(sheetName);
+    
+    if (!sheet) {
+      sheet = ss.insertSheet(sheetName);
+      if (data.tipo === 'Control Simple') {
+        sheet.appendRow([
+          'ID_Inspección', 'Fecha_Hora_Registro', 'Operarios',
+          'N°_Ascensor', 'Código', 'Ubicación', 'Pisos',
+          'Fecha_Hora_Ascensor', '¿Funciona?', 'Motivo_Falla',
+          'Observaciones_Ascensor', 'Observaciones_Generales', 'Fecha_Recepción'
+        ]);
+      } else {
+        sheet.appendRow([
+          'ID_Inspección', 'Fecha_Hora_Registro', 'Operarios',
+          'N°_Ascensor', 'Código', 'Ubicación', 'Pisos',
+          'Fecha_Hora_Ascensor', '¿Funciona?', 'Luz_Cabina',
+          'Andar', 'Frenado', 'Puerta_Interna',
+          'Pisos_Verificados', 'Observaciones_Ascensor',
+          'Observaciones_Generales', 'Fecha_Recepción'
+        ]);
+      }
+      sheet.getRange(1, 1, 1, sheet.getLastColumn())
+        .setFontWeight('bold')
+        .setBackground('#1e293b')
+        .setFontColor('#ffffff');
+      sheet.setFrozenRows(1);
+    }
+
+    var timestamp = new Date();
+
+    if (data.items && Array.isArray(data.items)) {
+      data.items.forEach(function(item) {
+        if (data.tipo === 'Control Simple') {
+          sheet.appendRow([
+            data.id, data.fechaHoraRegistroFormato || data.fechaHoraRegistro, data.operariosTexto,
+            item.ascensorId, item.codigo, item.nombre, item.pisos,
+            item.fechaHora, item.funciona, item.motivoNoFunciona,
+            item.observaciones, data.observacionesGenerales, timestamp
+          ]);
+        } else {
+          sheet.appendRow([
+            data.id, data.fechaHoraRegistroFormato || data.fechaHoraRegistro, data.operariosTexto,
+            item.ascensorId, item.codigo, item.nombre, item.pisos,
+            item.fechaHora, item.funciona, item.luzCabina,
+            item.andar, item.frenado, item.puertaInterna,
+            item.pisosDetalle, item.observaciones, data.observacionesGenerales, timestamp
+          ]);
+        }
+      });
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'success',
+      message: 'Inspección guardada exitosamente en pestaña ' + sheetName
+    })).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      status: 'error',
+      message: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  return ContentService.createTextOutput(JSON.stringify({
+    status: 'online',
+    message: 'Web App activa y lista para recibir POST.'
+  })).setMimeType(ContentService.MimeType.JSON);
+}`;
+
+      const handleCopy = () => {
+        navigator.clipboard.writeText(codeGS);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 3000);
+      };
+
+      return (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-3xl w-full my-6 max-h-[92vh] flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-lg">
+                  📊
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                    Conexión con Google Sheets (Excel)
+                  </h3>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    Solución de guardado y despliegue del Web App
+                  </span>
+                </div>
+              </div>
+              <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg text-sm">
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 dark:text-slate-300">
+              <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 space-y-2">
+                <div className="font-bold text-blue-900 dark:text-blue-200 text-sm flex items-center gap-2">
+                  <span>ℹ️ URL de Destino Configurada en la App:</span>
+                </div>
+                <code className="block p-2.5 bg-white dark:bg-slate-950 rounded-lg text-[11px] font-mono break-all text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
+                  {GOOGLE_APPS_SCRIPT_URL}
+                </code>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                  Instrucciones para activar el guardado en tu Hoja de Cálculo:
+                </h4>
+                <ol className="list-decimal list-inside space-y-2 leading-relaxed text-slate-600 dark:text-slate-300">
+                  <li>En tu planilla de Google Sheets, ve al menú <strong>Extensiones &gt; Apps Script</strong>.</li>
+                  <li>Reemplaza el código del archivo <code>Code.gs</code> pegando el código de abajo.</li>
+                  <li>
+                    Haz clic en <strong>Implementar (Deploy) &gt; Administrar implementaciones</strong>.
+                  </li>
+                  <li>Haz clic en el ícono del <strong>Lápiz (Editar)</strong>.</li>
+                  <li>
+                    <strong className="text-amber-600 dark:text-amber-400">Paso Crítico:</strong> En el campo <em>Versión</em>, selecciona obligatoriamente <strong>"Nueva versión"</strong>. (Si no creas una nueva versión, Google seguirá ejecutando la versión antigua sin la función <code>doPost</code>).
+                  </li>
+                  <li>Asegúrate de que en <em>Quién tiene acceso</em> diga <strong>"Cualquier usuario" (Anyone)</strong> y pulsa <strong>Implementar</strong>.</li>
+                </ol>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900 dark:text-slate-100">
+                    Código Completo para <code>Code.gs</code>:
+                  </span>
+                  <button
+                    onClick={handleCopy}
+                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-sm"
+                  >
+                    {copied ? "✓ ¡Copiado!" : "📋 Copiar Código"}
+                  </button>
+                </div>
+                <pre className="p-4 bg-slate-950 text-slate-200 rounded-xl font-mono text-[11px] overflow-x-auto max-h-60 leading-relaxed border border-slate-800">
+                  {codeGS}
+                </pre>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-end bg-slate-50 dark:bg-slate-900 rounded-b-2xl">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ====================================================================
+    // 4. COMPONENTE: MODAL DE FICHA OFICIAL DE INSPECCIÓN (IMPRIMIBLE)
+    // ====================================================================
+
+    function InspectionDetailModal({ report, onClose }) {
+      if (!report) return null;
+
+      const isSimple = report.type === 'SIMPLE';
+
+      return (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-4xl w-full my-6 max-h-[92vh] flex flex-col shadow-2xl">
+            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-800 no-print">
+              <div className="flex items-center gap-3">
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center font-bold text-white ${isSimple ? 'bg-blue-600' : 'bg-emerald-600'}`}>
+                  {isSimple ? '📋' : '📑'}
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                    Ficha de Inspección: {report.title}
+                  </h3>
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    ID: {report.id} · {formatDisplayDate(report.fechaHora)}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 rounded-lg text-xs font-bold shadow-xs hover:bg-slate-800"
+                >
+                  🖨️ Imprimir / Guardar PDF
+                </button>
+                <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-100 rounded-lg text-sm">
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-800 dark:text-slate-200 print-page">
+              {/* Encabezado Oficial */}
+              <div className="border border-slate-300 dark:border-slate-700 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">Tipo de Control:</span>
+                    <strong className="text-sm font-extrabold text-slate-900 dark:text-slate-100">
+                      {isSimple ? "CONTROL SIMPLE DE ASCENSORES" : "CONTROL COMPLETO DE ASCENSORES"}
+                    </strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">Fecha y Hora de Ronda:</span>
+                    <strong className="text-sm font-semibold">{formatDisplayDate(report.fechaHora)}</strong>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">Sincronización Sheets:</span>
+                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${report.enviadoGoogleSheets ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                      {report.enviadoGoogleSheets ? '✓ ENVIADO A GOOGLE SHEETS' : 'LOCAL (PENDIENTE REINTENTO)'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                  <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">Operarios Responsables Registrados:</span>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {report.operarios && report.operarios.map(op => (
+                      <span key={op} className="px-2 py-0.5 bg-slate-200 dark:bg-slate-700 rounded text-slate-800 dark:text-slate-200 font-semibold text-[11px]">
+                        👤 {op}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {report.generalNotes && (
+                  <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                    <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">Observaciones Generales de la Ronda:</span>
+                    <p className="mt-1 italic text-slate-700 dark:text-slate-300">{report.generalNotes}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Tabla de los 16 Ascensores */}
+              <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">
+                      <th className="p-2.5 font-bold">N°</th>
+                      <th className="p-2.5 font-bold">Ascensor y Ubicación</th>
+                      <th className="p-2.5 font-bold">¿Funciona?</th>
+                      {isSimple ? (
+                        <>
+                          <th className="p-2.5 font-bold">Motivo (si no funciona)</th>
+                          <th className="p-2.5 font-bold">Observaciones</th>
+                        </>
+                      ) : (
+                        <>
+                          <th className="p-2.5 font-bold">Luz / Andar / Frenado</th>
+                          <th className="p-2.5 font-bold">Componentes Verificados</th>
+                          <th className="p-2.5 font-bold">Observaciones</th>
+                        </>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800 font-normal">
+                    {report.items.map((item) => {
+                      const elv = ELEVATORS.find(e => e.id === item.elevatorId);
+                      return (
+                        <tr key={item.elevatorId} className={!item.funciona ? "bg-red-50/50 dark:bg-red-950/20" : ""}>
+                          <td className="p-2.5 font-bold font-mono text-slate-500">{elv ? elv.code : `#${item.elevatorId}`}</td>
+                          <td className="p-2.5">
+                            <strong className="block text-slate-900 dark:text-slate-100">{elv ? elv.name : ""}</strong>
+                            <span className="text-[10px] text-slate-400">{elv ? elv.pisos.join(" - ") : ""}</span>
+                          </td>
+                          <td className="p-2.5">
+                            {item.funciona ? (
+                              <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-bold text-[10px]">
+                                SI (Operativo)
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-300 font-bold text-[10px]">
+                                NO (Falla)
+                              </span>
+                            )}
+                          </td>
+
+                          {isSimple ? (
+                            <>
+                              <td className="p-2.5 font-medium text-red-700 dark:text-red-400">
+                                {!item.funciona ? (item.motivoNoFunciona || "Fuera de Servicio") : "-"}
+                              </td>
+                              <td className="p-2.5 text-slate-600 dark:text-slate-400">
+                                {item.observaciones || "-"}
+                              </td>
+                            </>
+                          ) : (
+                            <>
+                              <td className="p-2.5">
+                                <div><strong>Luz:</strong> {item.luzCabina || "-"}</div>
+                                <div><strong>Andar:</strong> {item.andar || "-"}</div>
+                                <div><strong>Frenado:</strong> {item.frenado || "-"}</div>
+                              </td>
+                              <td className="p-2.5 text-[11px]">
+                                <div>P. Interna: {item.puertaInterna ? "✓ Correcto" : "✗ Deficiente"}</div>
+                                <div className="text-[10px] text-slate-500 mt-0.5">
+                                  {item.pisosDetalle ? Object.entries(item.pisosDetalle).map(([p, ok]) => `${p}: ${ok ? '✓' : '✗'}`).join(", ") : "-"}
+                                </div>
+                              </td>
+                              <td className="p-2.5 text-slate-600 dark:text-slate-400">
+                                {item.observaciones || "-"}
+                              </td>
+                            </>
+                          )}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-end no-print bg-slate-50 dark:bg-slate-900 rounded-b-2xl">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
+              >
+                Cerrar Ficha
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ====================================================================
+    // 5. COMPONENTE: FORMULARIO CONTROL SIMPLE
+    // ====================================================================
+
+    function SimpleControlForm({ onSave, onCancel }) {
+      const [fechaHora, setFechaHora] = useState(getNowFormatted());
+      const [items, setItems] = useState(() => 
+        ELEVATORS.map(elv => ({
+          elevatorId: elv.id,
+          fechaHora: getNowFormatted(),
+          funciona: true,
+          motivoNoFunciona: 'Fuera de Servicio',
+          observaciones: ''
+        }))
+      );
+      const [selectedOperarios, setSelectedOperarios] = useState([]);
+      const [generalNotes, setGeneralNotes] = useState('');
+      const [isSubmitting, setIsSubmitting] = useState(false);
+
+      const handleItemChange = (elevatorId, field, value) => {
+        setItems(prev => prev.map(item => {
+          if (item.elevatorId === elevatorId) {
+            const updated = { ...item, [field]: value };
+            if (field === 'funciona' && value === true) {
+              updated.motivoNoFunciona = '';
+            } else if (field === 'funciona' && value === false && !item.motivoNoFunciona) {
+              updated.motivoNoFunciona = 'Fuera de Servicio';
+            }
+            return updated;
+          }
+          return item;
+        }));
+      };
+
+      const handleMarkAllYes = () => {
+        setItems(prev => prev.map(item => ({ ...item, funciona: true, motivoNoFunciona: '' })));
+      };
+
+      const toggleOperario = (name) => {
+        setSelectedOperarios(prev => 
+          prev.includes(name) ? prev.filter(o => o !== name) : [...prev, name]
+        );
+      };
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (selectedOperarios.length === 0) {
+          alert("Debe seleccionar al menos un operario responsable al finalizar.");
+          return;
+        }
+
+        setIsSubmitting(true);
+
+        const newReport = {
+          id: `CS-${Date.now().toString(36).toUpperCase()}`,
+          type: 'SIMPLE',
+          title: `Control Simple - ${formatDisplayDate(fechaHora)}`,
+          fechaHora: fechaHora,
+          items: items,
+          operarios: selectedOperarios,
+          generalNotes: generalNotes,
+          createdAt: new Date().toISOString()
+        };
+
+        const result = await sendToGoogleSheets(newReport);
+        newReport.enviadoGoogleSheets = result.success;
+        newReport.googleSheetsError = result.success ? null : result.message;
+
+        setIsSubmitting(false);
+        onSave(newReport);
+      };
+
+      return (
+        <form onSubmit={handleSubmit} className="max-w-5xl mx-auto py-6 px-4 space-y-6">
+          {/* Bloque de Información & Regla de Bloqueo */}
+          <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🔒</span>
+              <div>
+                <strong className="text-blue-900 dark:text-blue-200 text-sm block">
+                  Control Simple en Ejecución (Bloqueo de Interfaz Activo)
+                </strong>
+                <span className="text-slate-600 dark:text-slate-300">
+                  La opción de Control Completo se encuentra deshabilitada hasta que envíe este registro.
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-3 py-1.5 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900 rounded-lg font-semibold hover:bg-red-100"
+            >
+              Cancelar y Desbloquear
+            </button>
+          </div>
+
+          {/* Encabezado de Inspección: Fecha y Hora */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">
+                  Módulo: Control Simple de Ascensores
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Inspección secuencial de los 16 elevadores hospitalarios.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleMarkAllYes}
+                  className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 rounded-lg text-xs font-bold hover:bg-emerald-100"
+                >
+                  ✓ Marcar Todos "SI (Funciona)"
+                </button>
+              </div>
+            </div>
+
+            <div className="max-w-xs">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Fecha y Hora de la Ronda:
+              </label>
+              <input
+                type="datetime-local"
+                value={fechaHora}
+                onChange={(e) => setFechaHora(e.target.value)}
+                required
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono text-slate-900 dark:text-slate-100"
+              />
+            </div>
+          </div>
+
+          {/* Secuencia de los 16 Ascensores */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              Listado General de Ascensores (Secuencia 1 a 16)
+            </h3>
+
+            {items.map((item, idx) => {
+              const elv = ELEVATORS.find(e => e.id === item.elevatorId);
+              return (
+                <div
+                  key={item.elevatorId}
+                  className={`border rounded-xl p-4 transition-colors ${
+                    !item.funciona
+                      ? "bg-red-50/60 dark:bg-red-950/30 border-red-300 dark:border-red-900"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                  }`}
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 flex items-center justify-center font-bold text-xs font-mono">
+                        {elv.code}
+                      </span>
+                      <div>
+                        <strong className="text-sm font-bold text-slate-900 dark:text-slate-100 block">
+                          {elv.name}
+                        </strong>
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                          Pisos: {elv.pisos.join(" - ")} · Grupo: {elv.locationGroup}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Selector Funciona SI / NO */}
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 mr-2">¿Funciona?:</span>
+                        <label className={`px-3 py-1 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
+                          item.funciona 
+                            ? "bg-emerald-600 text-white shadow-xs" 
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                        }`}>
+                          <input
+                            type="radio"
+                            name={`funciona-${item.elevatorId}`}
+                            checked={item.funciona === true}
+                            onChange={() => handleItemChange(item.elevatorId, 'funciona', true)}
+                            className="sr-only"
+                          />
+                          SI
+                        </label>
+
+                        <label className={`px-3 py-1 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
+                          !item.funciona 
+                            ? "bg-red-600 text-white shadow-xs" 
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                        }`}>
+                          <input
+                            type="radio"
+                            name={`funciona-${item.elevatorId}`}
+                            checked={item.funciona === false}
+                            onChange={() => handleItemChange(item.elevatorId, 'funciona', false)}
+                            className="sr-only"
+                          />
+                          NO
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* MENÚ CONDICIONAL SI LA RESPUESTA ES 'NO' */}
+                  {!item.funciona && (
+                    <div className="mt-3 pt-3 border-t border-red-200 dark:border-red-900/60 grid grid-cols-1 sm:grid-cols-2 gap-3 animate-fadeIn">
+                      <div>
+                        <label className="block text-[11px] font-bold text-red-700 dark:text-red-300 mb-1">
+                          Motivo Condicional (Seleccionar):
+                        </label>
+                        <select
+                          value={item.motivoNoFunciona || "Fuera de Servicio"}
+                          onChange={(e) => handleItemChange(item.elevatorId, 'motivoNoFunciona', e.target.value)}
+                          className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-red-300 dark:border-red-800 rounded-lg text-xs font-bold text-red-900 dark:text-red-200"
+                        >
+                          <option value="Fuera de Servicio">Fuera de Servicio</option>
+                          <option value="Llamada a Service">Llamada a Service</option>
+                          <option value="Mantenimiento">Mantenimiento</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-red-700 dark:text-red-300 mb-1">
+                          Observaciones del Inconveniente:
+                        </label>
+                        <input
+                          type="text"
+                          value={item.observaciones}
+                          onChange={(e) => handleItemChange(item.elevatorId, 'observaciones', e.target.value)}
+                          placeholder="Describa el inconveniente..."
+                          className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-red-300 dark:border-red-800 rounded-lg text-xs text-slate-900 dark:text-slate-100"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Observaciones si funciona */}
+                  {item.funciona && (
+                    <div className="mt-2">
+                      <input
+                        type="text"
+                        value={item.observaciones}
+                        onChange={(e) => handleItemChange(item.elevatorId, 'observaciones', e.target.value)}
+                        placeholder="Observaciones adicionales (opcional)..."
+                        className="w-full px-3 py-1 bg-transparent border-b border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 focus:outline-none focus:border-blue-500"
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* LISTADO DE OPERARIOS (Común al finalizar) */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
+                Operarios Responsables (Cierre de Ronda)
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Seleccione el personal que realizó la verificación (selección múltiple):
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+              {OPERARIOS_LIST.map(op => {
+                const isSelected = selectedOperarios.includes(op);
+                return (
+                  <button
+                    type="button"
+                    key={op}
+                    onClick={() => toggleOperario(op)}
+                    className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-semibold text-left transition-all ${
+                      isSelected
+                        ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                        : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400"
+                    }`}
+                  >
+                    <span>{isSelected ? "✓" : "○"}</span>
+                    <span className="truncate">{op}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="pt-2">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Observaciones Generales de la Ronda (Opcional):
+              </label>
+              <textarea
+                rows={2}
+                value={generalNotes}
+                onChange={(e) => setGeneralNotes(e.target.value)}
+                placeholder="Novedades generales del edificio, suministros, etc."
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-slate-100"
+              />
+            </div>
+          </div>
+
+          {/* BOTÓN FINAL - ENVIADO DE REGISTRO */}
+          <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
+            <div className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
+              Al presionar el botón se enviará la información a Google Sheets y se desbloqueará el menú de selección.
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-extrabold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {isSubmitting ? "Enviando a Google Sheets..." : "Final - Enviado de registro"}
+            </button>
+          </div>
+        </form>
+      );
+    }
+
+    // ====================================================================
+    // 6. COMPONENTE: FORMULARIO CONTROL COMPLETO
+    // ====================================================================
+
+    function CompleteControlForm({ onSave, onCancel }) {
+      const [fechaHora, setFechaHora] = useState(getNowFormatted());
+      const [items, setItems] = useState(() => 
+        ELEVATORS.map(elv => {
+          const pisosObj = {};
+          elv.pisos.forEach(p => { pisosObj[p] = true; });
+          return {
+            elevatorId: elv.id,
+            fechaHora: getNowFormatted(),
+            funciona: true,
+            luzCabina: 'Buena',
+            andar: 'Suave',
+            frenado: 'Suave',
+            puertaInterna: true,
+            pisosDetalle: pisosObj,
+            observaciones: ''
+          };
+        })
+      );
+      const [selectedOperarios, setSelectedOperarios] = useState([]);
+      const [generalNotes, setGeneralNotes] = useState('');
+      const [isSubmitting, setIsSubmitting] = useState(false);
+
+      const handleItemChange = (elevatorId, field, value) => {
+        setItems(prev => prev.map(item => item.elevatorId === elevatorId ? { ...item, [field]: value } : item));
+      };
+
+      const handleFloorCheckbox = (elevatorId, floorName, isChecked) => {
+        setItems(prev => prev.map(item => {
+          if (item.elevatorId === elevatorId) {
+            return {
+              ...item,
+              pisosDetalle: {
+                ...item.pisosDetalle,
+                [floorName]: isChecked
+              }
+            };
+          }
+          return item;
+        }));
+      };
+
+      const toggleOperario = (name) => {
+        setSelectedOperarios(prev => 
+          prev.includes(name) ? prev.filter(o => o !== name) : [...prev, name]
+        );
+      };
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (selectedOperarios.length === 0) {
+          alert("Debe seleccionar al menos un operario responsable al finalizar.");
+          return;
+        }
+
+        setIsSubmitting(true);
+
+        const newReport = {
+          id: `CC-${Date.now().toString(36).toUpperCase()}`,
+          type: 'COMPLETO',
+          title: `Control Completo - ${formatDisplayDate(fechaHora)}`,
+          fechaHora: fechaHora,
+          items: items,
+          operarios: selectedOperarios,
+          generalNotes: generalNotes,
+          createdAt: new Date().toISOString()
+        };
+
+        const result = await sendToGoogleSheets(newReport);
+        newReport.enviadoGoogleSheets = result.success;
+        newReport.googleSheetsError = result.success ? null : result.message;
+
+        setIsSubmitting(false);
+        onSave(newReport);
+      };
+
+      return (
+        <form onSubmit={handleSubmit} className="max-w-5xl mx-auto py-6 px-4 space-y-6">
+          {/* Aviso de Bloqueo Activo */}
+          <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🔒</span>
+              <div>
+                <strong className="text-emerald-900 dark:text-emerald-200 text-sm block">
+                  Control Completo en Ejecución (Bloqueo de Interfaz Activo)
+                </strong>
+                <span className="text-slate-600 dark:text-slate-300">
+                  La opción de Control Simple se encuentra deshabilitada hasta que envíe este registro.
+                </span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-3 py-1.5 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/60 border border-red-200 dark:border-red-900 rounded-lg font-semibold hover:bg-red-100"
+            >
+              Cancelar y Desbloquear
+            </button>
+          </div>
+
+          {/* Encabezado: Fecha y Hora */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
+            <div>
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">
+                Módulo: Control Completo de Ascensores
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Auditoría detallada por componentes mecánicos y eléctricos en los 16 elevadores.
+              </p>
+            </div>
+
+            <div className="max-w-xs">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Fecha y Hora de Inspección:
+              </label>
+              <input
+                type="datetime-local"
+                value={fechaHora}
+                onChange={(e) => setFechaHora(e.target.value)}
+                required
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs font-mono text-slate-900 dark:text-slate-100"
+              />
+            </div>
+          </div>
+
+          {/* Secuencia de los 16 Ascensores con Parámetros Específicos */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
+              Verificación Detallada por Ascensor (1 a 16)
+            </h3>
+
+            {items.map((item) => {
+              const elv = ELEVATORS.find(e => e.id === item.elevatorId);
+              return (
+                <div
+                  key={item.elevatorId}
+                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4 shadow-xs"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 gap-2">
+                    <div className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-xs font-mono">
+                        {elv.code}
+                      </span>
+                      <div>
+                        <strong className="text-sm font-bold text-slate-900 dark:text-slate-100 block">
+                          {elv.name}
+                        </strong>
+                        <span className="text-[11px] text-slate-400">
+                          Pisos específicos: {elv.pisos.join(", ")}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300">¿Funciona?:</span>
+                      <button
+                        type="button"
+                        onClick={() => handleItemChange(item.elevatorId, 'funciona', !item.funciona)}
+                        className={`px-3 py-1 rounded text-xs font-bold ${
+                          item.funciona ? "bg-emerald-600 text-white" : "bg-red-600 text-white"
+                        }`}
+                      >
+                        {item.funciona ? "SI" : "NO"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Estado General: Luz, Andar, Frenado */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Luz Cabina:</label>
+                      <select
+                        value={item.luzCabina}
+                        onChange={(e) => handleItemChange(item.elevatorId, 'luzCabina', e.target.value)}
+                        className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs"
+                      >
+                        <option value="Buena">Buena</option>
+                        <option value="Regular">Regular</option>
+                        <option value="Deficiente">Deficiente</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Andar:</label>
+                      <select
+                        value={item.andar}
+                        onChange={(e) => handleItemChange(item.elevatorId, 'andar', e.target.value)}
+                        className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs"
+                      >
+                        <option value="Suave">Suave</option>
+                        <option value="Talonea">Talonea</option>
+                        <option value="Vibra">Vibra</option>
+                        <option value="Golpetea">Golpetea</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Frenado:</label>
+                      <select
+                        value={item.frenado}
+                        onChange={(e) => handleItemChange(item.elevatorId, 'frenado', e.target.value)}
+                        className="w-full px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs"
+                      >
+                        <option value="Suave">Suave</option>
+                        <option value="Desnivel">Desnivel</option>
+                        <option value="Brusco">Brusco</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Verificación de Componentes según Ascensor */}
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2 text-xs">
+                    <span className="font-bold text-slate-700 dark:text-slate-300 block">
+                      Verificación de Componentes (Tildar si está correcto):
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-2 cursor-pointer p-2 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700">
+                        <input
+                          type="checkbox"
+                          checked={item.puertaInterna}
+                          onChange={(e) => handleItemChange(item.elevatorId, 'puertaInterna', e.target.checked)}
+                          className="w-4 h-4 text-emerald-600 rounded"
+                        />
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">Puerta Interna</span>
+                      </label>
+                    </div>
+
+                    <div>
+                      <span className="text-[11px] text-slate-500 block mb-1">
+                        Puerta Pisos / Botonera Cabina / Botonera Piso / Cerradura por nivel:
+                      </span>
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                        {elv.pisos.map(floor => (
+                          <label
+                            key={floor}
+                            className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer text-xs ${
+                              item.pisosDetalle && item.pisosDetalle[floor]
+                                ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-900 dark:text-emerald-200 font-semibold"
+                                : "bg-red-50 dark:bg-red-950/40 border-red-300 dark:border-red-900 text-red-900 dark:text-red-200"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={Boolean(item.pisosDetalle && item.pisosDetalle[floor])}
+                              onChange={(e) => handleFloorCheckbox(item.elevatorId, floor, e.target.checked)}
+                              className="w-4 h-4 text-emerald-600 rounded"
+                            />
+                            <span>{floor}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <input
+                        type="text"
+                        value={item.observaciones}
+                        onChange={(e) => handleItemChange(item.elevatorId, 'observaciones', e.target.value)}
+                        placeholder={`Observación específica de ${elv.name}...`}
+                        className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs"
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Selección de Operarios */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
+                Operarios Responsables (Cierre de Ronda)
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Seleccione el personal que ejecutó el control completo:
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+              {OPERARIOS_LIST.map(op => {
+                const isSelected = selectedOperarios.includes(op);
+                return (
+                  <button
+                    type="button"
+                    key={op}
+                    onClick={() => toggleOperario(op)}
+                    className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-semibold text-left transition-all ${
+                      isSelected
+                        ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                        : "bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-emerald-400"
+                    }`}
+                  >
+                    <span>{isSelected ? "✓" : "○"}</span>
+                    <span className="truncate">{op}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="pt-2">
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                Observaciones Generales de la Inspección Completa:
+              </label>
+              <textarea
+                rows={2}
+                value={generalNotes}
+                onChange={(e) => setGeneralNotes(e.target.value)}
+                placeholder="Observaciones de sala de máquinas, cuadro de control, etc."
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-xs text-slate-900 dark:text-slate-100"
+              />
+            </div>
+          </div>
+
+          {/* Botón Final */}
+          <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
+            <div className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
+              Al presionar el botón se enviará la auditoría a Google Sheets y se desbloqueará el menú inicial.
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-extrabold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {isSubmitting ? "Enviando a Google Sheets..." : "Final - Enviado de registro"}
+            </button>
+          </div>
+        </form>
+      );
+    }
+
+    // ====================================================================
+    // 7. COMPONENTE: PANTALLA PRINCIPAL (DASHBOARD)
+    // ====================================================================
+
+    function DashboardView({
+      inspections,
+      inspectionInProgress,
+      onStartSimple,
+      onStartCompleto,
+      onCancelInspection,
+      onOpenModal,
+      onOpenSheetsModal
+    }) {
+      const isSimpleLocked = inspectionInProgress === 'COMPLETO';
+      const isCompletoLocked = inspectionInProgress === 'SIMPLE';
+
+      const pendingSheets = inspections.filter(i => !i.enviadoGoogleSheets).length;
+
+      return (
+        <div className="max-w-6xl mx-auto py-6 px-4 space-y-6">
+          {/* Banner de Estado Google Sheets */}
+          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-xl">
+                📊
+              </div>
+              <div>
+                <strong className="text-sm font-bold text-slate-900 dark:text-slate-100 block">
+                  Conexión con Planilla Excel / Google Sheets
+                </strong>
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  {pendingSheets > 0 
+                    ? `⚠️ Hay ${pendingSheets} inspección(es) guardada(s) localmente pendientes de sincronizar.`
+                    : 'Recepción activa mediante Web App POST directo.'}
+                </span>
+              </div>
+            </div>
+
+            <button
+              onClick={onOpenSheetsModal}
+              className="px-4 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold text-xs rounded-xl hover:bg-slate-800"
+            >
+              Ver Script & Diagnóstico
+            </button>
+          </div>
+
+          {/* SELECTOR DE MODO CON REGLA DE BLOQUEO MUTUO */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs">
+            <div className="pb-4 border-b border-slate-100 dark:border-slate-800">
+              <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">
+                Flujo Operativo de Inspección
+              </span>
+              <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100 mt-0.5">
+                Selección de Modo de Inspección
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Seleccione el control a realizar. La opción contraria quedará estrictamente bloqueada durante todo el flujo hasta presionar "Final - Enviado de registro".
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6">
+              {/* Tarjeta 1: Control Simple */}
+              <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-all ${
+                isSimpleLocked 
+                  ? "bg-slate-100 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-50"
+                  : inspectionInProgress === 'SIMPLE'
+                  ? "bg-blue-50/60 dark:bg-blue-950/30 border-blue-400 ring-2 ring-blue-500"
+                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-400"
+              }`}>
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-2xl">📋</span>
+                    {isSimpleLocked ? (
+                      <span className="text-[11px] font-bold text-red-600 bg-red-100 dark:bg-red-950 px-2 py-0.5 rounded">
+                        🔒 Bloqueado
+                      </span>
+                    ) : inspectionInProgress === 'SIMPLE' ? (
+                      <span className="text-[11px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded">
+                        En Curso
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-medium text-slate-400">Ronda Rápida</span>
+                    )}
+                  </div>
+
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                    Control Simple
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                    Verificación rápida de los 16 ascensores (SI/NO), menú condicional en caso de fallo (Fuera de Servicio / Llamada a Service / Mantenimiento) y observaciones.
+                  </p>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  {isSimpleLocked ? (
+                    <div className="text-xs text-red-600 dark:text-red-400 font-semibold">
+                      Opción bloqueada: Finalice el Control Completo primero.
+                    </div>
+                  ) : inspectionInProgress === 'SIMPLE' ? (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={onStartSimple}
+                        className="flex-1 py-2.5 px-4 bg-blue-600 text-white rounded-xl text-xs font-bold"
+                      >
+                        Continuar Control Simple
+                      </button>
+                      <button
+                        onClick={onCancelInspection}
+                        className="py-2.5 px-3 bg-red-100 text-red-700 rounded-xl text-xs font-semibold"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={onStartSimple}
+                      className="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+                    >
+                      Iniciar Control Simple
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Tarjeta 2: Control Completo */}
+              <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-all ${
+                isCompletoLocked 
+                  ? "bg-slate-100 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-50"
+                  : inspectionInProgress === 'COMPLETO'
+                  ? "bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-400 ring-2 ring-emerald-500"
+                  : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-emerald-400"
+              }`}>
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-2xl">📑</span>
+                    {isCompletoLocked ? (
+                      <span className="text-[11px] font-bold text-red-600 bg-red-100 dark:bg-red-950 px-2 py-0.5 rounded">
+                        🔒 Bloqueado
+                      </span>
+                    ) : inspectionInProgress === 'COMPLETO' ? (
+                      <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
+                        En Curso
+                      </span>
+                    ) : (
+                      <span className="text-[11px] font-medium text-slate-400">Auditoría Técnica</span>
+                    )}
+                  </div>
+
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+                    Control Completo
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                    Auditoría exhaustiva: luz cabina, andar, frenado y casillas de verificación de componentes personalizadas para cada uno de los 16 elevadores.
+                  </p>
+                </div>
+
+                <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+                  {isCompletoLocked ? (
+                    <div className="text-xs text-red-600 dark:text-red-400 font-semibold">
+                      Opción bloqueada: Finalice el Control Simple primero.
+                    </div>
+                  ) : inspectionInProgress === 'COMPLETO' ? (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={onStartCompleto}
+                        className="flex-1 py-2.5 px-4 bg-emerald-600 text-white rounded-xl text-xs font-bold"
+                      >
+                        Continuar Control Completo
+                      </button>
+                      <button
+                        onClick={onCancelInspection}
+                        className="py-2.5 px-3 bg-red-100 text-red-700 rounded-xl text-xs font-semibold"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={onStartCompleto}
+                      className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs cursor-pointer"
+                    >
+                      Iniciar Control Completo
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Historial Reciente */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
+              Últimas Inspecciones Registradas
+            </h3>
+
+            {inspections.length === 0 ? (
+              <div className="text-center py-8 text-xs text-slate-400">
+                No hay inspecciones registradas aún. Inicie un Control Simple o Completo arriba.
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                {inspections.slice(0, 5).map(rep => (
+                  <div key={rep.id} className="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          rep.type === 'SIMPLE' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'
+                        }`}>
+                          {rep.type === 'SIMPLE' ? 'Control Simple' : 'Control Completo'}
+                        </span>
+                        <strong className="text-slate-900 dark:text-slate-100">{rep.title}</strong>
+                      </div>
+                      <span className="text-slate-400 text-[11px] mt-0.5 block">
+                        Operarios: {rep.operarios ? rep.operarios.join(", ") : "-"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => onOpenModal(rep)}
+                        className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 rounded-lg font-semibold text-xs"
+                      >
+                        Ver Detalle / Imprimir
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ====================================================================
+    // 8. COMPONENTE: HISTORIAL COMPLETO
+    // ====================================================================
+
+    function HistoryView({ inspections, onOpenModal, onRefresh }) {
+      const [filter, setFilter] = useState('ALL');
+
+      const filtered = inspections.filter(i => {
+        if (filter === 'ALL') return true;
+        return i.type === filter;
+      });
+
+      const handleRetrySheets = async (rep) => {
+        const res = await sendToGoogleSheets(rep);
+        rep.enviadoGoogleSheets = res.success;
+        StorageService.saveInspection(rep);
+        onRefresh();
+        alert(res.success ? "¡Sincronizado con éxito con Google Sheets!" : "Error al sincronizar: " + res.message);
+      };
+
+      const handleDelete = (id) => {
+        if (window.confirm("¿Confirma eliminar este registro del historial local?")) {
+          StorageService.deleteInspection(id);
+          onRefresh();
+        }
+      };
+
+      return (
+        <div className="max-w-5xl mx-auto py-6 px-4 space-y-6">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <div>
+                <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">
+                  Historial de Inspecciones
+                </h2>
+                <span className="text-xs text-slate-400">
+                  Total de rondas archivadas: {inspections.length}
+                </span>
+              </div>
+
+              <div className="flex gap-2 text-xs">
+                <button
+                  onClick={() => setFilter('ALL')}
+                  className={`px-3 py-1.5 rounded-lg font-bold ${filter === 'ALL' ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900' : 'bg-slate-100 dark:bg-slate-800 text-slate-600'}`}
+                >
+                  Todos
+                </button>
+                <button
+                  onClick={() => setFilter('SIMPLE')}
+                  className={`px-3 py-1.5 rounded-lg font-bold ${filter === 'SIMPLE' ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600'}`}
+                >
+                  Simple
+                </button>
+                <button
+                  onClick={() => setFilter('COMPLETO')}
+                  className={`px-3 py-1.5 rounded-lg font-bold ${filter === 'COMPLETO' ? 'bg-emerald-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600'}`}
+                >
+                  Completo
+                </button>
+              </div>
+            </div>
+
+            {filtered.length === 0 ? (
+              <div className="text-center py-10 text-xs text-slate-400">
+                No se encontraron registros en el historial.
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filtered.map(rep => (
+                  <div key={rep.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                          rep.type === 'SIMPLE' ? 'bg-blue-100 text-blue-800' : 'bg-emerald-100 text-emerald-800'
+                        }`}>
+                          {rep.type === 'SIMPLE' ? 'Control Simple' : 'Control Completo'}
+                        </span>
+                        <strong className="text-sm font-bold text-slate-900 dark:text-slate-100">{rep.title}</strong>
+                      </div>
+                      <div className="text-slate-500 text-[11px] mt-1 space-x-2">
+                        <span>ID: {rep.id}</span>
+                        <span>·</span>
+                        <span>Operarios: {rep.operarios ? rep.operarios.join(", ") : "-"}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {!rep.enviadoGoogleSheets && (
+                        <button
+                          onClick={() => handleRetrySheets(rep)}
+                          className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded text-[11px]"
+                          title="Reintentar transmisión a Google Sheets"
+                        >
+                          ☁️ Reintentar Sheets
+                        </button>
+                      )}
+                      <button
+                        onClick={() => onOpenModal(rep)}
+                        className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-800 dark:text-slate-200 rounded-lg font-semibold"
+                      >
+                        Ver Ficha
+                      </button>
+                      <button
+                        onClick={() => handleDelete(rep.id)}
+                        className="p-1.5 text-red-500 hover:bg-red-50 rounded"
+                        title="Eliminar"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // ====================================================================
+    // 9. COMPONENTE PRINCIPAL (APP CONTAINER)
+    // ====================================================================
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('dashboard');
+      const [inspectionInProgress, setInspectionInProgress] = useState(null); // 'SIMPLE' | 'COMPLETO' | null
+      const [darkMode, setDarkMode] = useState(false);
+      const [inspections, setInspections] = useState([]);
+      const [selectedReport, setSelectedReport] = useState(null);
+      const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
+
+      useEffect(() => {
+        setInspections(StorageService.getInspections());
+      }, []);
+
+      useEffect(() => {
+        if (darkMode) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }, [darkMode]);
+
+      const handleStartSimple = () => {
+        if (inspectionInProgress === 'COMPLETO') {
+          alert("El Control Simple está bloqueado mientras hay un Control Completo en curso.");
+          return;
+        }
+        setInspectionInProgress('SIMPLE');
+        setActiveTab('simple');
+      };
+
+      const handleStartCompleto = () => {
+        if (inspectionInProgress === 'SIMPLE') {
+          alert("El Control Completo está bloqueado mientras hay un Control Simple en curso.");
+          return;
+        }
+        setInspectionInProgress('COMPLETO');
+        setActiveTab('completo');
+      };
+
+      const handleCancelInspection = () => {
+        if (window.confirm("¿Confirma cancelar la ronda en curso? Se perderán los datos no guardados y se desbloqueará la interfaz.")) {
+          setInspectionInProgress(null);
+          setActiveTab('dashboard');
+        }
+      };
+
+      // REINICIO REQUERIDO: Al guardar, se desbloquea la interfaz y vuelve a la pantalla inicial
+      const handleSaveInspection = (report) => {
+        StorageService.saveInspection(report);
+        setInspections(StorageService.getInspections());
+        
+        // Desbloqueo y reinicio de la interfaz
+        setInspectionInProgress(null);
+        setActiveTab('dashboard');
+
+        alert(`¡Registro de ${report.type === 'SIMPLE' ? 'Control Simple' : 'Control Completo'} guardado exitosamente!`);
+        setSelectedReport(report);
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col">
+          {/* Header Superior */}
+          <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 no-print">
+            <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 flex items-center justify-center font-bold text-lg">
+                  ▲
+                </div>
+                <div>
+                  <h1 className="text-base sm:text-lg font-bold tracking-tight text-slate-900 dark:text-slate-100">
+                    Inspección de Ascensores
+                  </h1>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block -mt-1">
+                    Control Hospitalario & Clínico (16 Ascensores)
+                  </span>
+                </div>
+              </div>
+
+              {/* Botones de Navegación */}
+              <nav className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveTab('dashboard')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                    activeTab === 'dashboard' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+                  }`}
+                >
+                  Inicio
+                </button>
+
+                <button
+                  onClick={() => setActiveTab('history')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                    activeTab === 'history' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-slate-100' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200'
+                  }`}
+                >
+                  Historial
+                </button>
+
+                <button
+                  onClick={() => setIsSheetsModalOpen(true)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800"
+                >
+                  📊 Sheets
+                </button>
+
+                <button
+                  onClick={() => setDarkMode(prev => !prev)}
+                  className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
+                >
+                  {darkMode ? "☀️" : "🌙"}
+                </button>
+              </nav>
+            </div>
+          </header>
+
+          {/* Banner de Bloqueo de Interfaz si hay inspección activa */}
+          {inspectionInProgress && (
+            <div className="bg-amber-500/10 border-b border-amber-300 dark:border-amber-800 px-4 py-2 text-xs text-amber-900 dark:text-amber-200 no-print">
+              <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
+                <span>
+                  🔒 <strong>Bloqueo Activo:</strong> Se está ejecutando un <strong>{inspectionInProgress === 'SIMPLE' ? 'Control Simple' : 'Control Completo'}</strong>. La opción contraria permanecerá bloqueada hasta presionar "Final - Enviado de registro".
+                </span>
+                <button onClick={handleCancelInspection} className="text-red-600 font-bold underline cursor-pointer">
+                  Cancelar ronda y desbloquear
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Vistas Principales */}
+          <main className="flex-1">
+            {activeTab === 'dashboard' && (
+              <DashboardView
+                inspections={inspections}
+                inspectionInProgress={inspectionInProgress}
+                onStartSimple={handleStartSimple}
+                onStartCompleto={handleStartCompleto}
+                onCancelInspection={handleCancelInspection}
+                onOpenModal={(rep) => setSelectedReport(rep)}
+                onOpenSheetsModal={() => setIsSheetsModalOpen(true)}
+              />
+            )}
+
+            {activeTab === 'simple' && (
+              <SimpleControlForm
+                onSave={handleSaveInspection}
+                onCancel={handleCancelInspection}
+              />
+            )}
+
+            {activeTab === 'completo' && (
+              <CompleteControlForm
+                onSave={handleSaveInspection}
+                onCancel={handleCancelInspection}
+              />
+            )}
+
+            {activeTab === 'history' && (
+              <HistoryView
+                inspections={inspections}
+                onOpenModal={(rep) => setSelectedReport(rep)}
+                onRefresh={() => setInspections(StorageService.getInspections())}
+              />
+            )}
+          </main>
+
+          {/* Modal de Detalle / Imprimible */}
+          {selectedReport && (
+            <InspectionDetailModal
+              report={selectedReport}
+              onClose={() => setSelectedReport(null)}
+            />
+          )}
+
+          {/* Modal de Conexión con Google Sheets */}
+          {isSheetsModalOpen && (
+            <GoogleSheetsModal
+              onClose={() => setIsSheetsModalOpen(false)}
+            />
+          )}
+
+          {/* Pie de Página */}
+          <footer className="border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs text-slate-400 no-print">
+            Sistema de Inspección de Ascensores Clínicos · 16 Unidades · 12 Operarios Registrados
+          </footer>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

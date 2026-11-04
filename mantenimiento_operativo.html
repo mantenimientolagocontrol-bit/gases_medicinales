@@ -252,93 +252,93 @@
             
             <div class="sub-group-title">Subestación</div>
             <div class="equipment-list">
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Transformador 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Transformador 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Generador 1</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Generador 2</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Transferencia 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-transf-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Transformador 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-transf-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Transformador 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-gen-1" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Generador 1</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-b-gen-2" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Generador 2</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-b-transf-c1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Transferencia 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
             </div>
 
             <div class="sub-group-title">Sala Mantenimiento</div>
             <div class="equipment-list">
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Aire Medicinal 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Aire Medicinal 2</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Vacío 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Vacío 2</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-b-comp-med-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Aire Medicinal 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-comp-med-2" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Aire Medicinal 2</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-b-vac-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Vacío 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-vac-2" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Vacío 2</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
                 <!-- Calderetas (8) -->
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 4</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 5</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 6</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 7</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-amarillo" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 8</span><div class="indicator"><span class="led"></span><span class="text-status">Desperfecto</span></div></div>
+                <div id="eq-b-cald-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-cald-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-cald-3" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-cald-4" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 4</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-cald-5" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 5</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-cald-6" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 6</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-cald-7" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 7</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-cald-8" class="equipment-item status-amarillo" onclick="cambiarEstado(this)"><span class="equipment-name">Caldereta 8</span><div class="indicator"><span class="led"></span><span class="text-status">Desperfecto</span></div></div>
                 <!-- Bombas Agua F (5) -->
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua F 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua F 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua F 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua F 4</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-rojo" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua F 5</span><div class="indicator"><span class="led"></span><span class="text-status">Fuera Serv.</span></div></div>
+                <div id="eq-b-agf-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua F 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-agf-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua F 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-agf-3" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua F 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-agf-4" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua F 4</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-b-agf-5" class="equipment-item status-rojo" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua F 5</span><div class="indicator"><span class="led"></span><span class="text-status">Fuera Serv.</span></div></div>
                 <!-- Bombas Agua C (4) -->
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua C 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua C 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua C 3</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-amarillo" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua C 4</span><div class="indicator"><span class="led"></span><span class="text-status">Desperfecto</span></div></div>
+                <div id="eq-b-agc-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua C 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-agc-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua C 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-agc-3" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua C 3</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-b-agc-4" class="equipment-item status-amarillo" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua C 4</span><div class="indicator"><span class="led"></span><span class="text-status">Desperfecto</span></div></div>
                 <!-- Bombas Cloacales y Achique -->
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Cloacal 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Cloacal 2</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Achique Far. 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Achique Far. 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Achique Far. 3</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Achique Man. 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Achique Man. 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Achique Man. 3</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Achique Ram. 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Achique Ram. 2</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-b-cloc-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Cloacal 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-cloc-2" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Cloacal 2</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-b-ach-far-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Achique Far. 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-ach-far-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Achique Far. 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-ach-far-3" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Achique Far. 3</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-b-ach-man-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Achique Man. 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-ach-man-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Achique Man. 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-ach-man-3" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Achique Man. 3</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-b-ach-ram-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Achique Ram. 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-ach-ram-2" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Achique Ram. 2</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
             </div>
 
             <div class="sub-group-title">Ascensores Edificio B</div>
             <div class="equipment-list">
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 10</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 11</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 12</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 13</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 14</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 15</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 16</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-asc-10" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 10</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-asc-11" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 11</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-asc-12" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 12</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-asc-13" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 13</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-asc-14" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 14</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-asc-15" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 15</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-asc-16" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 16</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
             </div>
 
             <div class="sub-group-title">Climatización & Sistemas Edif. B</div>
             <div class="equipment-list">
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA Quirofano PB</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA Quirofano 2P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">VRV (UQ-PB)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">VRV (UQ 2P)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA UTI NEO 1P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA UCI NEO 1P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">VRV (UTI NEO)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">VRV (UCI NEO)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA UTPR 1P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">VRV (UTPR)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA INT. NEO 2P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">VRV (Int.Neo)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-uta-qpb" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA Quirofano PB</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-uta-q2p" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA Quirofano 2P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-vrv-qpb" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">VRV (UQ-PB)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-vrv-q2p" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">VRV (UQ 2P)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-uta-utineo" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA UTI NEO 1P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-uta-ucineo" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA UCI NEO 1P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-vrv-utineo" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">VRV (UTI NEO)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-vrv-ucineo" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">VRV (UCI NEO)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-uta-utpr" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA UTPR 1P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-vrv-utpr" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">VRV (UTPR)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-uta-intneo" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA INT. NEO 2P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-vrv-intneo" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">VRV (Int.Neo)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
                 <!-- Sistemas A, B, C, D, E, F -->
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema A: VRV 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema A: VRV 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema A: VRV 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema B: VRV 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema B: VRV 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema B: VRV 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema C: VRV 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema C: VRV 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema C: VRV 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema C: VRV 4</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema D y E: VRV 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema D y E: VRV 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema F: VRV 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema F: VRV 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema F: VRV 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysa-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema A: VRV 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysa-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema A: VRV 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysa-3" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema A: VRV 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysb-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema B: VRV 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysb-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema B: VRV 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysb-3" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema B: VRV 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysc-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema C: VRV 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysc-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema C: VRV 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysc-3" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema C: VRV 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysc-4" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema C: VRV 4</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysde-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema D y E: VRV 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysde-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema D y E: VRV 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysf-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema F: VRV 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysf-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema F: VRV 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-b-sysf-3" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Sistema F: VRV 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
             </div>
         </div>
 
@@ -348,95 +348,95 @@
 
             <div class="sub-group-title">Sala Máquinas & Bombas</div>
             <div class="equipment-list">
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Transferencia 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Generador 3</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua 4</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-a-transf-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Transferencia 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-gen-3" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Generador 3</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-a-agua-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-agua-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-agua-3" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-agua-4" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Agua 4</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
             </div>
 
             <div class="sub-group-title">Sala Caldera Clínica & Compresores</div>
             <div class="equipment-list">
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldera HO 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldera HE 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba recirculadora Ho 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba recirculadora Ho 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba recirculadora He 3</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Aire Medicinal 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Aire Medicinal 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Aire Medicinal 3</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Vacio 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Vacio 2</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-a-cald-ho1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldera HO 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-cald-he2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldera HE 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-rec-ho1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba recirculadora Ho 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-rec-ho2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba recirculadora Ho 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-rec-he3" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba recirculadora He 3</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-a-comp-med1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Aire Medicinal 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-comp-med2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Aire Medicinal 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-comp-med3" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Aire Medicinal 3</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-a-vac-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Vacio 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-vac-2" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Compresor Vacio 2</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
             </div>
 
             <div class="sub-group-title">Planta Piloto & Calderines</div>
             <div class="equipment-list">
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 3a</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 3b</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 4</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 5a</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 5b</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 6a</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 6b</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 7a</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 7b</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 9a</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 9b</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 10a</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 10b</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 11a</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 11b</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldera 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldera 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Calderin 1 PB</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Calderin 2 EP</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Calderin 3 1P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-rec-3a" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 3a</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-rec-3b" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 3b</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-a-rec-4" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 4</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-rec-5a" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 5a</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-rec-5b" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 5b</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-a-rec-6a" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 6a</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-rec-6b" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 6b</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-a-rec-7a" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 7a</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-rec-7b" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 7b</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-a-rec-9a" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 9a</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-rec-9b" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 9b</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-a-rec-10a" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 10a</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-rec-10b" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 10b</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-a-rec-11a" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 11a</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-rec-11b" class="equipment-item status-azul" onclick="cambiarEstado(this)"><span class="equipment-name">Bomba Recirculadora 11b</span><div class="indicator"><span class="led"></span><span class="text-status">Backup</span></div></div>
+                <div id="eq-a-cald-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldera 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-cald-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Caldera 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-caldin-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Calderin 1 PB</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-caldin-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Calderin 2 EP</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-caldin-3" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Calderin 3 1P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
             </div>
 
             <div class="sub-group-title">Chiller & Climatización Edif. A</div>
             <div class="equipment-list">
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo a1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo a2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo a3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo a4</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo a5</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo a6</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo b1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo b2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo b3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo b4</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Rooftop 1 (Lab.)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Rooftop 2 (B.L.H.)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Rooftop 3 (Cedin)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 27</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 28</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 30</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 31</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 32</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 33</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA UTI I</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA UTI A</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA UTI C</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA P.Q.R.</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 3P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 2P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 1P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA P.B.</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA RAYOS</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-mod-a1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo a1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-mod-a2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo a2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-mod-a3" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo a3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-mod-a4" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo a4</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-mod-a5" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo a5</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-mod-a6" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo a6</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-mod-b1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo b1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-mod-b2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo b2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-mod-b3" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo b3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-mod-b4" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Modulo b4</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-roof-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Rooftop 1 (Lab.)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-roof-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Rooftop 2 (B.L.H.)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-roof-3" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Rooftop 3 (Cedin)</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-27" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 27</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-28" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 28</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-30" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 30</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-31" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 31</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-32" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 32</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-33" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 33</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-utii" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA UTI I</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-utia" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA UTI A</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-utic" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA UTI C</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-pqr" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA P.Q.R.</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-3p" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 3P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-2p" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 2P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-1p" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA 1P</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-pb" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA P.B.</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-uta-rayos" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">UTA RAYOS</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
             </div>
 
             <div class="sub-group-title">Ascensores Edificio A</div>
             <div class="equipment-list">
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 4</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 5</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 6</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 7</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 8</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
-                <div class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 9</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-asc-1" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 1</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-asc-2" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 2</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-asc-3" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 3</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-asc-4" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 4</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-asc-5" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 5</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-asc-6" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 6</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-asc-7" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 7</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-asc-8" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 8</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
+                <div id="eq-a-asc-9" class="equipment-item status-verde" onclick="cambiarEstado(this)"><span class="equipment-name">Ascensor 9</span><div class="indicator"><span class="led"></span><span class="text-status">Funcionando</span></div></div>
             </div>
         </div>
 
@@ -447,7 +447,30 @@
     </div>
 
     <script>
+        // URL de tu Web App de Google Apps Script
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxpYOCpNvs2GTOS_3OjsUtjzeFJw8OS6u7Mx0sK9mssyjXWHiaLvS-uaLxVZXZHm0H3aw/exec";
+
         let supervisorActivo = false;
+
+        // Cargar los estados guardados desde Google Drive al iniciar la página
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                let response = await fetch(WEB_APP_URL);
+                let estadosData = await response.json();
+                
+                const equipos = document.querySelectorAll('.equipment-item');
+                equipos.forEach((eq) => {
+                    const id = eq.id;
+                    if (id && estadosData[id]) {
+                        eq.classList.remove("status-verde", "status-azul", "status-amarillo", "status-rojo", "status-detenido", "status-mantenimiento");
+                        eq.classList.add(estadosData[id].clase);
+                        eq.querySelector(".text-status").innerText = estadosData[id].texto;
+                    }
+                });
+            } catch (e) {
+                console.error("Error al cargar desde Google Drive", e);
+            }
+        });
 
         function toggleAuth() {
             if (!supervisorActivo) {
@@ -502,6 +525,40 @@
                 elemento.classList.remove("status-mantenimiento");
                 elemento.classList.add("status-verde");
                 elemento.querySelector(".text-status").innerText = "Funcionando";
+            }
+
+            // Guardar cambios automáticamente en Google Drive tras cada modificación
+            guardarEstados();
+        }
+
+        async function guardarEstados() {
+            const equipos = document.querySelectorAll('.equipment-item');
+            const estadosData = {};
+
+            equipos.forEach((eq) => {
+                const id = eq.id;
+                if (!id) return;
+
+                let claseEstado = "status-verde";
+                if (eq.classList.contains("status-azul")) claseEstado = "status-azul";
+                else if (eq.classList.contains("status-amarillo")) claseEstado = "status-amarillo";
+                else if (eq.classList.contains("status-rojo")) claseEstado = "status-rojo";
+                else if (eq.classList.contains("status-detenido")) claseEstado = "status-detenido";
+                else if (eq.classList.contains("status-mantenimiento")) claseEstado = "status-mantenimiento";
+
+                estadosData[id] = {
+                    clase: claseEstado,
+                    texto: eq.querySelector(".text-status").innerText
+                };
+            });
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: "POST",
+                    body: JSON.stringify(estadosData)
+                });
+            } catch (e) {
+                console.error("Error al guardar en Google Drive", e);
             }
         }
     </script>

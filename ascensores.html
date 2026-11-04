@@ -171,7 +171,6 @@
       };
 
       try {
-        // Envío directo HTTP POST hacia Google Apps Script (modo no-cors para bypass de CORS del navegador)
         await fetch(GOOGLE_APPS_SCRIPT_URL, {
           method: "POST",
           mode: "no-cors",
@@ -189,184 +188,7 @@
     }
 
     // ====================================================================
-    // 3. COMPONENTE: MODAL DE DIAGNÓSTICO Y CÓDIGO APPS SCRIPT
-    // ====================================================================
-
-    function GoogleSheetsModal({ onClose }) {
-      const [copied, setCopied] = useState(false);
-
-      const codeGS = `// ====================================================================
-// SCRIPT RECEPTOR PARA CONTROL SIMPLE Y COMPLETO DE ASCENSORES
-// Copiar y pegar en: Extensiones > Apps Script > Code.gs
-// ====================================================================
-
-function doPost(e) {
-  try {
-    var raw = e.postData.contents;
-    var data = JSON.parse(raw);
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-
-    var sheetName = data.tipo === 'Control Simple' ? 'Control Simple' : 'Control Completo';
-    var sheet = ss.getSheetByName(sheetName);
-    
-    if (!sheet) {
-      sheet = ss.insertSheet(sheetName);
-      if (data.tipo === 'Control Simple') {
-        sheet.appendRow([
-          'ID_Inspección', 'Fecha_Hora_Registro', 'Operarios',
-          'N°_Ascensor', 'Código', 'Ubicación', 'Pisos',
-          'Fecha_Hora_Ascensor', '¿Funciona?', 'Motivo_Falla',
-          'Observaciones_Ascensor', 'Observaciones_Generales', 'Fecha_Recepción'
-        ]);
-      } else {
-        sheet.appendRow([
-          'ID_Inspección', 'Fecha_Hora_Registro', 'Operarios',
-          'N°_Ascensor', 'Código', 'Ubicación', 'Pisos',
-          'Fecha_Hora_Ascensor', '¿Funciona?', 'Luz_Cabina',
-          'Andar', 'Frenado', 'Puerta_Interna',
-          'Pisos_Verificados', 'Observaciones_Ascensor',
-          'Observaciones_Generales', 'Fecha_Recepción'
-        ]);
-      }
-      sheet.getRange(1, 1, 1, sheet.getLastColumn())
-        .setFontWeight('bold')
-        .setBackground('#1e293b')
-        .setFontColor('#ffffff');
-      sheet.setFrozenRows(1);
-    }
-
-    var timestamp = new Date();
-
-    if (data.items && Array.isArray(data.items)) {
-      data.items.forEach(function(item) {
-        if (data.tipo === 'Control Simple') {
-          sheet.appendRow([
-            data.id, data.fechaHoraRegistroFormato || data.fechaHoraRegistro, data.operariosTexto,
-            item.ascensorId, item.codigo, item.nombre, item.pisos,
-            item.fechaHora, item.funciona, item.motivoNoFunciona,
-            item.observaciones, data.observacionesGenerales, timestamp
-          ]);
-        } else {
-          sheet.appendRow([
-            data.id, data.fechaHoraRegistroFormato || data.fechaHoraRegistro, data.operariosTexto,
-            item.ascensorId, item.codigo, item.nombre, item.pisos,
-            item.fechaHora, item.funciona, item.luzCabina,
-            item.andar, item.frenado, item.puertaInterna,
-            item.pisosDetalle, item.observaciones, data.observacionesGenerales, timestamp
-          ]);
-        }
-      });
-    }
-
-    return ContentService.createTextOutput(JSON.stringify({
-      status: 'success',
-      message: 'Inspección guardada exitosamente en pestaña ' + sheetName
-    })).setMimeType(ContentService.MimeType.JSON);
-
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({
-      status: 'error',
-      message: error.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function doGet(e) {
-  return ContentService.createTextOutput(JSON.stringify({
-    status: 'online',
-    message: 'Web App activa y lista para recibir POST.'
-  })).setMimeType(ContentService.MimeType.JSON);
-}`;
-
-      const handleCopy = () => {
-        navigator.clipboard.writeText(codeGS);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 3000);
-      };
-
-      return (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-3xl w-full my-6 max-h-[92vh] flex flex-col shadow-2xl">
-            <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold text-lg">
-                  📊
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                    Conexión con Google Sheets (Excel)
-                  </h3>
-                  <span className="text-xs text-slate-500 dark:text-slate-400">
-                    Solución de guardado y despliegue del Web App
-                  </span>
-                </div>
-              </div>
-              <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-100 hover:bg-slate-800 rounded-lg text-sm">
-                ✕
-              </button>
-            </div>
-
-            <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-700 dark:text-slate-300">
-              <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 space-y-2">
-                <div className="font-bold text-blue-900 dark:text-blue-200 text-sm flex items-center gap-2">
-                  <span>ℹ️ URL de Destino Configurada en la App:</span>
-                </div>
-                <code className="block p-2.5 bg-white dark:bg-slate-950 rounded-lg text-[11px] font-mono break-all text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-900">
-                  {GOOGLE_APPS_SCRIPT_URL}
-                </code>
-              </div>
-
-              <div className="space-y-3">
-                <h4 className="font-bold text-sm text-slate-900 dark:text-slate-100">
-                  Instrucciones para activar el guardado en tu Hoja de Cálculo:
-                </h4>
-                <ol className="list-decimal list-inside space-y-2 leading-relaxed text-slate-600 dark:text-slate-300">
-                  <li>En tu planilla de Google Sheets, ve al menú <strong>Extensiones &gt; Apps Script</strong>.</li>
-                  <li>Reemplaza el código del archivo <code>Code.gs</code> pegando el código de abajo.</li>
-                  <li>
-                    Haz clic en <strong>Implementar (Deploy) &gt; Administrar implementaciones</strong>.
-                  </li>
-                  <li>Haz clic en el ícono del <strong>Lápiz (Editar)</strong>.</li>
-                  <li>
-                    <strong className="text-amber-600 dark:text-amber-400">Paso Crítico:</strong> En el campo <em>Versión</em>, selecciona obligatoriamente <strong>"Nueva versión"</strong>. (Si no creas una nueva versión, Google seguirá ejecutando la versión antigua sin la función <code>doPost</code>).
-                  </li>
-                  <li>Asegúrate de que en <em>Quién tiene acceso</em> diga <strong>"Cualquier usuario" (Anyone)</strong> y pulsa <strong>Implementar</strong>.</li>
-                </ol>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900 dark:text-slate-100">
-                    Código Completo para <code>Code.gs</code>:
-                  </span>
-                  <button
-                    onClick={handleCopy}
-                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-sm"
-                  >
-                    {copied ? "✓ ¡Copiado!" : "📋 Copiar Código"}
-                  </button>
-                </div>
-                <pre className="p-4 bg-slate-950 text-slate-200 rounded-xl font-mono text-[11px] overflow-x-auto max-h-60 leading-relaxed border border-slate-800">
-                  {codeGS}
-                </pre>
-              </div>
-            </div>
-
-            <div className="p-4 border-t border-slate-200 dark:border-slate-800 flex justify-end bg-slate-50 dark:bg-slate-900 rounded-b-2xl">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-              >
-                Cerrar
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    // ====================================================================
-    // 4. COMPONENTE: MODAL DE FICHA OFICIAL DE INSPECCIÓN (IMPRIMIBLE)
+    // 3. COMPONENTE: MODAL DE FICHA OFICIAL DE INSPECCIÓN (IMPRIMIBLE)
     // ====================================================================
 
     function InspectionDetailModal({ report, onClose }) {
@@ -405,9 +227,8 @@ function doGet(e) {
             </div>
 
             <div className="p-6 overflow-y-auto space-y-6 text-xs text-slate-800 dark:text-slate-200 print-page">
-              {/* Encabezado Oficial */}
               <div className="border border-slate-300 dark:border-slate-700 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/40">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">Tipo de Control:</span>
                     <strong className="text-sm font-extrabold text-slate-900 dark:text-slate-100">
@@ -417,12 +238,6 @@ function doGet(e) {
                   <div>
                     <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">Fecha y Hora de Ronda:</span>
                     <strong className="text-sm font-semibold">{formatDisplayDate(report.fechaHora)}</strong>
-                  </div>
-                  <div>
-                    <span className="text-slate-500 dark:text-slate-400 block text-[10px] uppercase font-bold">Sincronización Sheets:</span>
-                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${report.enviadoGoogleSheets ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-                      {report.enviadoGoogleSheets ? '✓ ENVIADO A GOOGLE SHEETS' : 'LOCAL (PENDIENTE REINTENTO)'}
-                    </span>
                   </div>
                 </div>
 
@@ -445,7 +260,6 @@ function doGet(e) {
                 )}
               </div>
 
-              {/* Tabla de los 16 Ascensores */}
               <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
@@ -538,7 +352,7 @@ function doGet(e) {
     }
 
     // ====================================================================
-    // 5. COMPONENTE: FORMULARIO CONTROL SIMPLE
+    // 4. COMPONENTE: FORMULARIO CONTROL SIMPLE
     // ====================================================================
 
     function SimpleControlForm({ onSave, onCancel }) {
@@ -611,7 +425,6 @@ function doGet(e) {
 
       return (
         <form onSubmit={handleSubmit} className="max-w-5xl mx-auto py-6 px-4 space-y-6">
-          {/* Bloque de Información & Regla de Bloqueo */}
           <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
               <span className="text-xl">🔒</span>
@@ -633,7 +446,6 @@ function doGet(e) {
             </button>
           </div>
 
-          {/* Encabezado de Inspección: Fecha y Hora */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
               <div>
@@ -670,7 +482,6 @@ function doGet(e) {
             </div>
           </div>
 
-          {/* Secuencia de los 16 Ascensores */}
           <div className="space-y-3">
             <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
               Listado General de Ascensores (Secuencia 1 a 16)
@@ -702,7 +513,6 @@ function doGet(e) {
                       </div>
                     </div>
 
-                    {/* Selector Funciona SI / NO */}
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-1.5">
                         <span className="text-xs font-bold text-slate-700 dark:text-slate-300 mr-2">¿Funciona?:</span>
@@ -739,7 +549,6 @@ function doGet(e) {
                     </div>
                   </div>
 
-                  {/* MENÚ CONDICIONAL SI LA RESPUESTA ES 'NO' */}
                   {!item.funciona && (
                     <div className="mt-3 pt-3 border-t border-red-200 dark:border-red-900/60 grid grid-cols-1 sm:grid-cols-2 gap-3 animate-fadeIn">
                       <div>
@@ -772,7 +581,6 @@ function doGet(e) {
                     </div>
                   )}
 
-                  {/* Observaciones si funciona */}
                   {item.funciona && (
                     <div className="mt-2">
                       <input
@@ -789,7 +597,6 @@ function doGet(e) {
             })}
           </div>
 
-          {/* LISTADO DE OPERARIOS (Común al finalizar) */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
             <div>
               <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
@@ -835,10 +642,9 @@ function doGet(e) {
             </div>
           </div>
 
-          {/* BOTÓN FINAL - ENVIADO DE REGISTRO */}
           <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
             <div className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
-              Al presionar el botón se enviará la información a Google Sheets y se desbloqueará el menú de selección.
+              Al presionar el botón se enviará la información de registro.
             </div>
 
             <button
@@ -846,7 +652,7 @@ function doGet(e) {
               disabled={isSubmitting}
               className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-extrabold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              {isSubmitting ? "Enviando a Google Sheets..." : "Final - Enviado de registro"}
+              {isSubmitting ? "Guardando registro..." : "Final - Enviado de registro"}
             </button>
           </div>
         </form>
@@ -854,7 +660,7 @@ function doGet(e) {
     }
 
     // ====================================================================
-    // 6. COMPONENTE: FORMULARIO CONTROL COMPLETO
+    // 5. COMPONENTE: FORMULARIO CONTROL COMPLETO
     // ====================================================================
 
     function CompleteControlForm({ onSave, onCancel }) {
@@ -935,7 +741,6 @@ function doGet(e) {
 
       return (
         <form onSubmit={handleSubmit} className="max-w-5xl mx-auto py-6 px-4 space-y-6">
-          {/* Aviso de Bloqueo Activo */}
           <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2">
               <span className="text-xl">🔒</span>
@@ -957,7 +762,6 @@ function doGet(e) {
             </button>
           </div>
 
-          {/* Encabezado: Fecha y Hora */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
             <div>
               <h2 className="text-xl font-extrabold text-slate-900 dark:text-slate-100">
@@ -982,7 +786,6 @@ function doGet(e) {
             </div>
           </div>
 
-          {/* Secuencia de los 16 Ascensores con Parámetros Específicos */}
           <div className="space-y-4">
             <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100">
               Verificación Detallada por Ascensor (1 a 16)
@@ -1024,7 +827,6 @@ function doGet(e) {
                     </div>
                   </div>
 
-                  {/* Estado General: Luz, Andar, Frenado */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                     <div>
                       <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Luz Cabina:</label>
@@ -1067,7 +869,6 @@ function doGet(e) {
                     </div>
                   </div>
 
-                  {/* Verificación de Componentes según Ascensor */}
                   <div className="pt-2 border-t border-slate-100 dark:border-slate-800 space-y-2 text-xs">
                     <span className="font-bold text-slate-700 dark:text-slate-300 block">
                       Verificación de Componentes (Tildar si está correcto):
@@ -1126,7 +927,6 @@ function doGet(e) {
             })}
           </div>
 
-          {/* Selección de Operarios */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
             <div>
               <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
@@ -1172,10 +972,9 @@ function doGet(e) {
             </div>
           </div>
 
-          {/* Botón Final */}
           <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3 shadow-sm">
             <div className="text-xs text-slate-500 dark:text-slate-400 text-center sm:text-left">
-              Al presionar el botón se enviará la auditoría a Google Sheets y se desbloqueará el menú inicial.
+              Al presionar el botón se enviará la auditoría de registro.
             </div>
 
             <button
@@ -1183,7 +982,7 @@ function doGet(e) {
               disabled={isSubmitting}
               className="w-full sm:w-auto px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white font-extrabold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
-              {isSubmitting ? "Enviando a Google Sheets..." : "Final - Enviado de registro"}
+              {isSubmitting ? "Guardando auditoría..." : "Final - Enviado de registro"}
             </button>
           </div>
         </form>
@@ -1191,7 +990,7 @@ function doGet(e) {
     }
 
     // ====================================================================
-    // 7. COMPONENTE: PANTALLA PRINCIPAL (DASHBOARD)
+    // 6. COMPONENTE: PANTALLA PRINCIPAL (DASHBOARD)
     // ====================================================================
 
     function DashboardView({
@@ -1200,43 +999,13 @@ function doGet(e) {
       onStartSimple,
       onStartCompleto,
       onCancelInspection,
-      onOpenModal,
-      onOpenSheetsModal
+      onOpenModal
     }) {
       const isSimpleLocked = inspectionInProgress === 'COMPLETO';
       const isCompletoLocked = inspectionInProgress === 'SIMPLE';
 
-      const pendingSheets = inspections.filter(i => !i.enviadoGoogleSheets).length;
-
       return (
         <div className="max-w-6xl mx-auto py-6 px-4 space-y-6">
-          {/* Banner de Estado Google Sheets */}
-          <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-xl">
-                📊
-              </div>
-              <div>
-                <strong className="text-sm font-bold text-slate-900 dark:text-slate-100 block">
-                  Conexión con Planilla Excel / Google Sheets
-                </strong>
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {pendingSheets > 0 
-                    ? `⚠️ Hay ${pendingSheets} inspección(es) guardada(s) localmente pendientes de sincronizar.`
-                    : 'Recepción activa mediante Web App POST directo.'}
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={onOpenSheetsModal}
-              className="px-4 py-2 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold text-xs rounded-xl hover:bg-slate-800"
-            >
-              Ver Script & Diagnóstico
-            </button>
-          </div>
-
-          {/* SELECTOR DE MODO CON REGLA DE BLOQUEO MUTUO */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs">
             <div className="pb-4 border-b border-slate-100 dark:border-slate-800">
               <span className="text-[11px] uppercase font-bold text-slate-400 tracking-wider">
@@ -1251,7 +1020,6 @@ function doGet(e) {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6">
-              {/* Tarjeta 1: Control Simple */}
               <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-all ${
                 isSimpleLocked 
                   ? "bg-slate-100 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-50"
@@ -1314,7 +1082,6 @@ function doGet(e) {
                 </div>
               </div>
 
-              {/* Tarjeta 2: Control Completo */}
               <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-all ${
                 isCompletoLocked 
                   ? "bg-slate-100 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 opacity-50"
@@ -1379,7 +1146,6 @@ function doGet(e) {
             </div>
           </div>
 
-          {/* Historial Reciente */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
             <h3 className="text-base font-extrabold text-slate-900 dark:text-slate-100">
               Últimas Inspecciones Registradas
@@ -1425,7 +1191,7 @@ function doGet(e) {
     }
 
     // ====================================================================
-    // 8. COMPONENTE: HISTORIAL COMPLETO
+    // 7. COMPONENTE: HISTORIAL COMPLETO
     // ====================================================================
 
     function HistoryView({ inspections, onOpenModal, onRefresh }) {
@@ -1515,9 +1281,9 @@ function doGet(e) {
                         <button
                           onClick={() => handleRetrySheets(rep)}
                           className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded text-[11px]"
-                          title="Reintentar transmisión a Google Sheets"
+                          title="Reintentar transmisión de datos"
                         >
-                          ☁️ Reintentar Sheets
+                          ☁️ Reintentar Envío
                         </button>
                       )}
                       <button
@@ -1544,16 +1310,15 @@ function doGet(e) {
     }
 
     // ====================================================================
-    // 9. COMPONENTE PRINCIPAL (APP CONTAINER)
+    // 8. COMPONENTE PRINCIPAL (APP CONTAINER)
     // ====================================================================
 
     function App() {
       const [activeTab, setActiveTab] = useState('dashboard');
-      const [inspectionInProgress, setInspectionInProgress] = useState(null); // 'SIMPLE' | 'COMPLETO' | null
+      const [inspectionInProgress, setInspectionInProgress] = useState(null);
       const [darkMode, setDarkMode] = useState(false);
       const [inspections, setInspections] = useState([]);
       const [selectedReport, setSelectedReport] = useState(null);
-      const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
 
       useEffect(() => {
         setInspections(StorageService.getInspections());
@@ -1592,12 +1357,10 @@ function doGet(e) {
         }
       };
 
-      // REINICIO REQUERIDO: Al guardar, se desbloquea la interfaz y vuelve a la pantalla inicial
       const handleSaveInspection = (report) => {
         StorageService.saveInspection(report);
         setInspections(StorageService.getInspections());
         
-        // Desbloqueo y reinicio de la interfaz
         setInspectionInProgress(null);
         setActiveTab('dashboard');
 
@@ -1607,7 +1370,6 @@ function doGet(e) {
 
       return (
         <div className="min-h-screen flex flex-col">
-          {/* Header Superior */}
           <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 no-print">
             <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
@@ -1624,7 +1386,6 @@ function doGet(e) {
                 </div>
               </div>
 
-              {/* Botones de Navegación */}
               <nav className="flex items-center gap-2">
                 <button
                   onClick={() => setActiveTab('dashboard')}
@@ -1645,13 +1406,6 @@ function doGet(e) {
                 </button>
 
                 <button
-                  onClick={() => setIsSheetsModalOpen(true)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800"
-                >
-                  📊 Sheets
-                </button>
-
-                <button
                   onClick={() => setDarkMode(prev => !prev)}
                   className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs"
                 >
@@ -1661,7 +1415,6 @@ function doGet(e) {
             </div>
           </header>
 
-          {/* Banner de Bloqueo de Interfaz si hay inspección activa */}
           {inspectionInProgress && (
             <div className="bg-amber-500/10 border-b border-amber-300 dark:border-amber-800 px-4 py-2 text-xs text-amber-900 dark:text-amber-200 no-print">
               <div className="max-w-6xl mx-auto flex items-center justify-between gap-2">
@@ -1675,7 +1428,6 @@ function doGet(e) {
             </div>
           )}
 
-          {/* Vistas Principales */}
           <main className="flex-1">
             {activeTab === 'dashboard' && (
               <DashboardView
@@ -1685,7 +1437,6 @@ function doGet(e) {
                 onStartCompleto={handleStartCompleto}
                 onCancelInspection={handleCancelInspection}
                 onOpenModal={(rep) => setSelectedReport(rep)}
-                onOpenSheetsModal={() => setIsSheetsModalOpen(true)}
               />
             )}
 
@@ -1712,7 +1463,6 @@ function doGet(e) {
             )}
           </main>
 
-          {/* Modal de Detalle / Imprimible */}
           {selectedReport && (
             <InspectionDetailModal
               report={selectedReport}
@@ -1720,14 +1470,6 @@ function doGet(e) {
             />
           )}
 
-          {/* Modal de Conexión con Google Sheets */}
-          {isSheetsModalOpen && (
-            <GoogleSheetsModal
-              onClose={() => setIsSheetsModalOpen(false)}
-            />
-          )}
-
-          {/* Pie de Página */}
           <footer className="border-t border-slate-200 dark:border-slate-800 py-4 text-center text-xs text-slate-400 no-print">
             Sistema de Inspección de Ascensores Clínicos · 16 Unidades · 12 Operarios Registrados
           </footer>

@@ -97,10 +97,10 @@
           <div>
             <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">1. SALA TÉCNICA</label>
             <select id="select-sala" onchange="actualizarEquiposSala()" class="w-full text-sm rounded-xl p-3 font-semibold border">
-              <option value="SALA (A) - 1°P">SALA (A) - 1°P (10 UPS)</option>
+              <option value="SALA (A) - 1°P">SALA (A) - 1°P (11 UPS)</option>
               <option value="SALA (B) - 1°P">SALA (B) - 1°P (8 UPS)</option>
               <option value="SALA (D) - 2°P">SALA (D) - 2°P (3 UPS)</option>
-              <option value="SALA (E) - Piso E">SALA (E) - Piso E (3 UPS)</option>
+              <option value="SALA (E) - Piso E">SALA (E) - Piso E (2 UPS)</option>
             </select>
             <p id="sala-help" class="text-[11px] text-slate-400 mt-1.5">Carga dinámicamente los equipos asignados de la sala.</p>
           </div>
@@ -260,10 +260,10 @@
     const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbyWygax70GL27qO-FS3LtWI68V4KhDcCVl3Szd3jvJiY_MDm_utvTdn2kYcqayPiD-_/exec';
 
     const SALAS_EQUIPOS = {
-      "SALA (A) - 1°P": ['UPS #12', 'UPS #13', 'UPS #14', 'UPS #15', 'UPS #16', 'UPS #20', 'UPS #21', 'UPS #22', 'UPS #23', 'UPS #24'],
+      "SALA (A) - 1°P": ['UPS #12', 'UPS #13', 'UPS #14', 'UPS #15', 'UPS #16', 'UPS #19', 'UPS #20', 'UPS #21', 'UPS #22', 'UPS #23', 'UPS #24'],
       "SALA (B) - 1°P": ['UPS #01', 'UPS #02', 'UPS #03', 'UPS #04', 'UPS #05', 'UPS #06', 'UPS #10', 'UPS #11'],
       "SALA (D) - 2°P": ['UPS #07', 'UPS #08', 'UPS #09'],
-      "SALA (E) - Piso E": ['UPS #17', 'UPS #18', 'UPS #19']
+      "SALA (E) - Piso E": ['UPS #17', 'UPS #18']
     };
 
     const OPERARIOS = [
